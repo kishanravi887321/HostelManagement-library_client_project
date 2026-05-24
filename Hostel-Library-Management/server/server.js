@@ -1,14 +1,16 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from "path"; // 🆕 Imported path module for managing file paths
+import path from "path";
 import { fileURLToPath } from "url";
-import libraryRoutes from "./routes/libraryRoutes.js";
 import connectDB from "./config/db.js";
-import studentRoutes from "./routes/studentRoutes.js";
-import hostelRoutes from "./routes/hostelRoutes.js";
-import dashboardRoutes from "./routes/dashboardRoutes.js";
-import authRoutes from "./routes/authRoutes.js";
+import {
+  authRouter,
+  dashboardRouter,
+  hostelRouter,
+  libraryRouter,
+  studentRouter,
+} from "./modules/index.js";
 import "./utils/monthlyReset.js";
 
 dotenv.config();
@@ -28,11 +30,11 @@ app.use(express.json());
 app.use("/uploads", express.static(path.resolve(__dirname, "uploads")));
 
 // Routes
-app.use("/api/library", libraryRoutes);
-app.use("/api/hostel", hostelRoutes);
-app.use("/api/students", studentRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/library", libraryRouter);
+app.use("/api/hostel", hostelRouter);
+app.use("/api/students", studentRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/dashboard", dashboardRouter);
 
 // Test route
 app.get("/", (req, res) => {
