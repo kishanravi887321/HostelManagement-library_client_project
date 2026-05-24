@@ -39,6 +39,13 @@ const SeatGrid = () => {
     return date.toISOString().split("T")[0];
   };
 
+  const formatDateDisplay = (value) => {
+    if (!value) return "N/A";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    return date.toLocaleDateString("en-IN");
+  };
+
   useEffect(() => {
     fetchStudents();
   }, []);
@@ -183,6 +190,19 @@ const SeatGrid = () => {
 
   if (loading) return <div className="text-gray-500 font-semibold p-4">⏳ Loading seat map...</div>;
 
+  const allocatedSeats = [...students]
+    .filter((student) => String(student.seatNo || "").trim() !== "")
+    .sort((a, b) => {
+      const aNum = Number(a.seatNo);
+      const bNum = Number(b.seatNo);
+
+      if (Number.isNaN(aNum) || Number.isNaN(bNum)) {
+        return String(a.seatNo || "").localeCompare(String(b.seatNo || ""));
+      }
+
+      return aNum - bNum;
+    });
+
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm relative">
       <div className="flex justify-between items-center mb-6">
@@ -238,6 +258,82 @@ const SeatGrid = () => {
           <span className="w-3 h-3 bg-red-500 rounded-full inline-block"></span>
           <span>Occupied ({students.length})</span>
         </div>
+      </div>
+
+      {/* Allocated Seats List */}
+      <div className="mt-8 bg-white rounded-lg border border-gray-100 shadow-sm">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <div>
+            <h3 className="text-base font-bold text-gray-800">Allocated Seats</h3>
+            <p className="text-xs text-gray-500">All occupied seats with student details.</p>
+          </div>
+          <span className="text-xs font-semibold text-gray-500">{allocatedSeats.length} Records</span>
+        </div>
+
+        {allocatedSeats.length === 0 ? (
+          <div className="p-6 text-sm text-gray-500">No seats have been allocated yet.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+                <tr>
+                  <th className="px-4 py-3">Seat</th>
+                  <th className="px-4 py-3">Name</th>
+                  <th className="px-4 py-3">Phone</th>
+                  <th className="px-4 py-3">Type</th>
+                  <th className="px-4 py-3">Joining</th>
+                  <th className="px-4 py-3">Paid</th>
+                  <th className="px-4 py-3">Due</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Payment</th>
+                  <th className="px-4 py-3">ID Proof</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {allocatedSeats.map((student) => (
+                  <tr key={student._id || student.seatNo} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-semibold text-gray-700">#{student.seatNo}</td>
+                    <td className="px-4 py-3 text-gray-800">{student.name || "Unknown"}</td>
+                    <td className="px-4 py-3 text-gray-600">{student.phone || "N/A"}</td>
+                    <td className="px-4 py-3 text-gray-600">{student.studentType || "Hosteler"}</td>
+                    <td className="px-4 py-3 text-gray-600">{formatDateDisplay(student.dateOfJoining)}</td>
+                    <td className="px-4 py-3 text-green-600 font-semibold">₹{student.amountPaid || 0}</td>
+                    <td className="px-4 py-3 text-red-500 font-semibold">₹{student.amountDue || 0}</td>
+                    <td className="px-4 py-3">
+                      <span className={student.feeStatus === "Paid" ? "text-green-600 font-semibold" : "text-red-500 font-semibold"}>
+                        {student.feeStatus || "Pending"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{student.paymentMode || "Online"}</td>
+                    <td className="px-4 py-3">
+                      {student.identityProof ? (
+                        <a
+                          href={`${API_BASE_URL}/uploads/${student.identityProof}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs font-semibold text-blue-600 hover:underline"
+                        >
+                          View
+                        </a>
+                      ) : (
+                        <span className="text-xs text-gray-400">None</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => openEditModal(student.seatNo, student)}
+                        className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded"
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* --- ALLOCATION MODAL POPUP --- */}
