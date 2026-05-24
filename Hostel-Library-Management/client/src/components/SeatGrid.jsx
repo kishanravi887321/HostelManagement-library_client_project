@@ -10,6 +10,7 @@ const SeatGrid = () => {
   // Modal & Form States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSeat, setSelectedSeat] = useState(null);
+  const [editingStudent, setEditingStudent] = useState(null);
   
   // Updated form state to match the complete library structure
   const [formData, setFormData] = useState({
@@ -28,6 +29,15 @@ const SeatGrid = () => {
   // Tracks the physical binary file upload object cleanly
   const [fileObject, setFileObject] = useState(null);
   const [formSubmitting, setFormSubmitting] = useState(false);
+
+  const isEditing = Boolean(editingStudent);
+
+  const formatDateForInput = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toISOString().split("T")[0];
+  };
 
   useEffect(() => {
     fetchStudents();
@@ -54,61 +64,60 @@ const SeatGrid = () => {
     );
   };
 
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingStudent(null);
+    setFileObject(null);
+  };
+
+  const openCreateModal = (seatNo) => {
+    setSelectedSeat(seatNo);
+    setEditingStudent(null);
+    setFileObject(null);
+
+    setFormData({
+      name: "",
+      phone: "",
+      studentType: "Hosteler",
+      seatNo: String(seatNo),
+      feeStatus: "Pending",
+      amountPaid: "",
+      amountDue: "",
+      lastPaymentDate: "",
+      dateOfJoining: "",
+      paymentMode: "Online"
+    });
+
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (seatNo, student) => {
+    setSelectedSeat(seatNo);
+    setEditingStudent(student);
+    setFileObject(null);
+
+    setFormData({
+      name: student.name || "",
+      phone: student.phone || "",
+      studentType: student.studentType || "Hosteler",
+      seatNo: String(seatNo),
+      feeStatus: student.feeStatus || "Pending",
+      amountPaid: student.amountPaid ?? "",
+      amountDue: student.amountDue ?? "",
+      lastPaymentDate: formatDateForInput(student.lastPaymentDate),
+      dateOfJoining: formatDateForInput(student.dateOfJoining),
+      paymentMode: student.paymentMode || "Online"
+    });
+
+    setIsModalOpen(true);
+  };
+
   const handleClick = (seatNo) => {
     const student = getOccupyingStudent(seatNo);
     if (student) {
-      let displayJoiningDate = "Not recorded yet"; 
-      if (student.dateOfJoining) {
-        try {
-          const dj = new Date(student.dateOfJoining);
-          displayJoiningDate = !isNaN(dj.getTime()) ? dj.toLocaleDateString("en-IN") : String(student.dateOfJoining);
-        } catch {
-          displayJoiningDate = String(student.dateOfJoining);
-        }
-      }
-
-      let displayPaymentDate = "N/A";
-      const rawPayDate = student.lastPaymentDate || student.paymentDate;
-      if (rawPayDate) {
-        try {
-          const d = new Date(rawPayDate);
-          displayPaymentDate = !isNaN(d.getTime()) ? d.toLocaleDateString("en-IN") : String(rawPayDate);
-        } catch {
-          displayPaymentDate = String(rawPayDate);
-        }
-      }
-
-      // Display custom ledger parameters dynamically inside the admin notification block
-      alert(
-        `🪑 Seat Reference: #${seatNo}\n` +
-        `----------------------------------------\n` +
-        `👤 Student Name: ${student.name || "Unknown"}\n` +
-        `📞 Phone Number: ${student.phone || "N/A"}\n` +
-        `📅 Date of Joining: ${displayJoiningDate}\n` +
-        `----------------------------------------\n` +
-        `💰 Amount Paid (Current Month): ₹${student.amountPaid || 0}\n` +
-        `📉 Amount Due (Current Month): ₹${student.amountDue || 0}\n` +
-        `⭐ Advance Wallet Balance: ₹${student.advanceBalance || 0}\n` + 
-        `💳 Mode of Payment: ${student.paymentMode || "Online"}\n` +
-        `📆 Date of Payment: ${displayPaymentDate}`
-      );
+      openEditModal(seatNo, student);
     } else {
-      setSelectedSeat(seatNo);
-      setIsModalOpen(true);
-      setFileObject(null); // Clear preceding stream selections
-      
-      setFormData({ 
-        name: "", 
-        phone: "", 
-        studentType: "Hosteler",
-        seatNo: String(seatNo),
-        feeStatus: "Pending",
-        amountPaid: "", 
-        amountDue: "",
-        lastPaymentDate: "",
-        dateOfJoining: "",
-        paymentMode: "Online"
-      }); 
+      openCreateModal(seatNo);
     }
   };
 
@@ -124,6 +133,22 @@ const SeatGrid = () => {
       const parsedAmountPaid = Number(formData.amountPaid) || 0;
       const parsedAmountDue = Number(formData.amountDue) || 0;
       const calculatedFeeStatus = parsedAmountDue > 0 ? "Pending" : "Paid";
+
+      if (isEditing && editingStudent?._id) {
+        const payload = {
+          ...formData,
+          seatNo: String(selectedSeat),
+          amountPaid: parsedAmountPaid,
+          amountDue: parsedAmountDue,
+          feeStatus: calculatedFeeStatus
+        };
+
+        await axios.put(`${API_BASE_URL}/api/library/${editingStudent._id}`, payload);
+        closeModal();
+        await fetchStudents();
+        alert(`Seat ${selectedSeat} has been updated.`);
+        return;
+      }
 
       const dataPayload = new FormData();
       dataPayload.append("name", formData.name);
@@ -145,8 +170,7 @@ const SeatGrid = () => {
         headers: { "Content-Type": "multipart/form-data" }
       });
       
-      setIsModalOpen(false);
-      setFileObject(null);
+      closeModal();
       await fetchStudents();
       alert(`Success! Seat ${selectedSeat} has been allocated to ${formData.name}.`);
     } catch (err) {
@@ -223,9 +247,9 @@ const SeatGrid = () => {
             
             <div className="flex justify-between items-center pb-3 border-b border-gray-100">
               <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                🪑 Allocating <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded text-sm border border-emerald-100">Seat #{selectedSeat}</span>
+                {isEditing ? "✏️ Editing" : "🪑 Allocating"} <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded text-sm border border-emerald-100">Seat #{selectedSeat}</span>
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl font-medium">&times;</button>
+              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl font-medium">&times;</button>
             </div>
 
             <form onSubmit={handleFormSubmit} className="space-y-4">
@@ -337,12 +361,18 @@ const SeatGrid = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Identity Proof (PDF Document)</label>
-                <input 
-                  type="file" 
-                  accept="application/pdf"
-                  onChange={(e) => setFileObject(e.target.files[0] || null)}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 file:cursor-pointer hover:file:bg-gray-100"
-                />
+                {isEditing ? (
+                  <div className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                    File updates are available from the Library page.
+                  </div>
+                ) : (
+                  <input 
+                    type="file" 
+                    accept="application/pdf"
+                    onChange={(e) => setFileObject(e.target.files[0] || null)}
+                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 file:cursor-pointer hover:file:bg-gray-100"
+                  />
+                )}
               </div>
 
               <div className="text-xs font-semibold text-gray-400 px-0.5">
@@ -350,9 +380,9 @@ const SeatGrid = () => {
               </div>
 
               <div className="flex gap-3 pt-3 justify-end text-sm border-t border-gray-100">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 font-medium text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition">Cancel</button>
+                <button type="button" onClick={closeModal} className="px-4 py-2 font-medium text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition">Cancel</button>
                 <button type="submit" disabled={formSubmitting} className="px-5 py-2 font-medium text-white bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 rounded-lg shadow-sm transition">
-                  {formSubmitting ? "Allocating..." : "Assign Student"}
+                  {formSubmitting ? (isEditing ? "Updating..." : "Allocating...") : (isEditing ? "Update Seat" : "Assign Student")}
                 </button>
               </div>
             </form>
