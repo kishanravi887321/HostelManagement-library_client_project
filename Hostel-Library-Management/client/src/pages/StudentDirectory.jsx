@@ -116,18 +116,18 @@ export default function StudentDirectory() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="border-b pb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Master Student Directory</h1>
-        <p className="text-xs text-gray-500 mt-1">Cross-reference full profiles accurately using verified phone markers.</p>
+    <div className="space-y-8">
+      <div className="panel p-6">
+        <h1 className="text-3xl font-semibold text-slate-900">Master Student Directory</h1>
+        <p className="text-sm text-slate-500 mt-1">Cross-reference profiles with verified contact markers.</p>
       </div>
 
       {/* 🔍 SEARCH BAR */}
-      <div className="bg-white p-4 rounded shadow border border-gray-100">
+      <div className="panel p-4">
         <div className="relative">
           <input
             type="text"
-            className="w-full border p-3 pl-10 rounded-lg text-sm focus:outline-purple-500"
+            className="w-full border border-[var(--border)] p-3 pl-10 rounded-lg text-sm bg-white"
             placeholder="Search student profiles by Name, Room Number, or Library Seat..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -142,8 +142,8 @@ export default function StudentDirectory() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* LEFT SIDE: LIST OF STUDENTS */}
-          <div className="lg:col-span-1 bg-white rounded shadow border border-gray-100 overflow-hidden h-[60vh] flex flex-col">
-            <div className="bg-gray-50 p-3 font-semibold text-xs text-gray-500 uppercase border-b">
+          <div className="lg:col-span-1 panel overflow-hidden h-[60vh] flex flex-col">
+            <div className="bg-white/70 p-3 font-semibold text-xs text-gray-500 uppercase border-b border-gray-100">
               Matching Records ({filteredProfiles.length})
             </div>
             <div className="divide-y overflow-y-auto flex-1">
@@ -153,8 +153,8 @@ export default function StudentDirectory() {
                   onClick={() => setSelectedStudent(student)}
                   className={`p-3 text-sm cursor-pointer transition flex justify-between items-center ${
                     selectedStudent?.name === student.name && selectedStudent?.phone === student.phone
-                      ? "bg-purple-50 border-l-4 border-purple-600" 
-                      : "hover:bg-gray-50"
+                      ? "bg-emerald-50 border-l-4 border-emerald-600" 
+                      : "hover:bg-emerald-50/40"
                   }`}
                 >
                   <div>
@@ -180,7 +180,7 @@ export default function StudentDirectory() {
           {/* RIGHT SIDE: PROFILE DETAIL VIEW */}
           <div className="lg:col-span-2">
             {selectedStudent ? (
-              <div className="bg-white rounded shadow border border-gray-100 overflow-hidden space-y-6 p-6">
+              <div className="panel space-y-6 p-6">
                 
                 <div className="flex justify-between items-start border-b pb-4">
                   <div>
@@ -195,7 +195,7 @@ export default function StudentDirectory() {
                         href={`${API_BASE_URL}/uploads/${selectedStudent.identityProof}`} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-xs font-semibold text-purple-600 underline bg-purple-50 hover:bg-purple-100 transition px-2 py-1 rounded block mt-1 border border-purple-100 cursor-pointer text-center"
+                        className="text-xs font-semibold text-emerald-700 underline bg-emerald-50 hover:bg-emerald-100 transition px-2 py-1 rounded block mt-1 border border-emerald-100 cursor-pointer text-center"
                       >
                         📄 View {selectedStudent.identityProof}
                       </a>
@@ -210,8 +210,8 @@ export default function StudentDirectory() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   
                   {/* ====== HOSTEL CARD ====== */}
-                  <div className="border rounded-lg p-4 bg-gray-50/50 relative overflow-hidden">
-                    <h3 className="text-sm font-bold text-orange-700 uppercase tracking-wide border-b pb-1.5 mb-3 flex items-center gap-1.5">
+                  <div className="panel-soft p-4 relative overflow-hidden">
+                    <h3 className="text-sm font-bold text-amber-700 uppercase tracking-wide border-b pb-1.5 mb-3 flex items-center gap-1.5">
                       <span>🏠</span> Hostel Residency Profile
                     </h3>
                     <div className="space-y-2 text-sm">
@@ -232,8 +232,8 @@ export default function StudentDirectory() {
                   </div>
 
                   {/* ====== LIBRARY CARD ====== */}
-                  <div className="border rounded-lg p-4 bg-gray-50/50 relative overflow-hidden">
-                    <h3 className="text-sm font-bold text-green-700 uppercase tracking-wide border-b pb-1.5 mb-3 flex items-center gap-1.5">
+                  <div className="panel-soft p-4 relative overflow-hidden">
+                    <h3 className="text-sm font-bold text-emerald-700 uppercase tracking-wide border-b pb-1.5 mb-3 flex items-center gap-1.5">
                       <span>📚</span> Library Membership Profile
                     </h3>
                     <div className="space-y-2 text-sm">
@@ -256,7 +256,7 @@ export default function StudentDirectory() {
                 </div>
 
                 {/* Bottom Total Block */}
-                <div className="bg-purple-600 p-4 rounded-lg text-white grid grid-cols-3 text-center">
+                <div className="bg-gradient-to-r from-teal-700 via-emerald-600 to-amber-500 p-4 rounded-lg text-white grid grid-cols-3 text-center">
                   <div>
                     <span className="text-[10px] uppercase opacity-75 font-semibold block">Total Paid</span>
                     <span className="text-xl font-bold">₹{selectedStudent.hostelPaid + selectedStudent.libraryPaid}</span>

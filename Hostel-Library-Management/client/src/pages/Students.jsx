@@ -226,35 +226,35 @@ export default function Students() {
   }, 0);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">Hostel Management System</h1>
+    <div className="space-y-8">
+      <h1 className="text-3xl font-semibold text-slate-900">Hostel Students</h1>
 
       {/* ================= METRIC HIGHLIGHT CARDS ================= */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-orange-500 text-white p-4 rounded shadow-sm">
-          <h2 className="text-xs uppercase tracking-wider opacity-90 font-semibold">Students Displayed</h2>
-          <p className="text-2xl font-bold mt-1">{filteredStudents.length} Profiles</p>
+        <div className="stat-card motion-rise" data-tone="ember">
+          <h2 className="stat-label">Students Displayed</h2>
+          <p className="stat-value">{filteredStudents.length} Profiles</p>
         </div>
-        <div className="bg-blue-600 text-white p-4 rounded shadow-sm">
-          <h2 className="text-xs uppercase tracking-wider opacity-90 font-semibold">Collected Online</h2>
-          <p className="text-2xl font-bold mt-1">₹{onlinePaidAmount}</p>
+        <div className="stat-card motion-rise" data-tone="blue">
+          <h2 className="stat-label">Collected Online</h2>
+          <p className="stat-value">₹{onlinePaidAmount}</p>
         </div>
-        <div className="bg-amber-700 text-white p-4 rounded shadow-sm">
-          <h2 className="text-xs uppercase tracking-wider opacity-90 font-semibold">Collected Cash</h2>
-          <p className="text-2xl font-bold mt-1">₹{cashPaidAmount}</p>
+        <div className="stat-card motion-rise" data-tone="amber">
+          <h2 className="stat-label">Collected Cash</h2>
+          <p className="stat-value">₹{cashPaidAmount}</p>
         </div>
-        <div className="bg-green-600 text-white p-4 rounded shadow-sm">
-          <h2 className="text-xs uppercase tracking-wider opacity-90 font-semibold">Total Revenue</h2>
-          <p className="text-2xl font-bold mt-1">₹{filteredPaidAmount}</p>
+        <div className="stat-card motion-rise" data-tone="forest">
+          <h2 className="stat-label">Total Revenue</h2>
+          <p className="stat-value">₹{filteredPaidAmount}</p>
         </div>
-        <div className="bg-red-500 text-white p-4 rounded shadow-sm">
-          <h2 className="text-xs uppercase tracking-wider opacity-90 font-semibold">Total Outstanding</h2>
-          <p className="text-2xl font-bold mt-1">₹{filteredPendingAmount}</p>
+        <div className="stat-card motion-rise" data-tone="rose">
+          <h2 className="stat-label">Total Outstanding</h2>
+          <p className="stat-value">₹{filteredPendingAmount}</p>
         </div>
       </div>
 
       {/* ================= COMPREHENSIVE REGISTRATION FORM ================= */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-white p-4 rounded shadow border border-gray-100">
+      <div className="panel p-5 grid grid-cols-1 md:grid-cols-3 gap-3">
         <input
           className="border p-2 rounded text-sm"
           placeholder="Student Name"
@@ -366,14 +366,14 @@ Calculated Fee Status: <span className={form.feeStatus === "Paid" ? "text-green-
 
         <button
           onClick={addStudent}
-          className="bg-orange-600 text-white p-2.5 col-span-full rounded font-medium hover:bg-orange-700 transition shadow mt-1"
+          className="btn-primary col-span-full"
         >
           Register Hostel Resident
         </button>
       </div>
 
       {/* ================= INTERACTIVE PERIOD CONTROLLER BAR ================= */}
-      <div className="bg-gray-50 p-4 rounded border border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="panel-soft p-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center space-x-2">
             <span className="font-semibold text-sm text-gray-700">Filter Period:</span>
@@ -418,9 +418,9 @@ Calculated Fee Status: <span className={form.feeStatus === "Paid" ? "text-green-
       </div>
 
       {/* ================= COMPACT REGISTRAR DATA TABLE ================= */}
-      <div className="bg-white rounded shadow overflow-hidden border border-gray-100">
+      <div className="table-shell">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-100 border-b font-semibold text-gray-600 text-sm">
+          <thead>
             <tr>
               <th className="p-3">Resident</th>
               <th className="p-3">Phone</th>
@@ -464,7 +464,7 @@ Calculated Fee Status: <span className={form.feeStatus === "Paid" ? "text-green-
                 <td className="p-3 text-center space-x-2 whitespace-nowrap">
                   <button
                     onClick={() => handleEditClick(s)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition"
+                    className="btn-primary text-xs px-3 py-1"
                   >
                     Edit
                   </button>
@@ -578,8 +578,8 @@ Calculated Fee Status: <span className={form.feeStatus === "Paid" ? "text-green-
             </div>
 
             <div className="flex justify-end space-x-2 pt-3 border-t text-sm font-medium">
-              <button type="button" onClick={() => setEditingStudent(null)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Cancel</button>
-              <button type="button" onClick={updateStudent} className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">Update Profile</button>
+              <button type="button" onClick={() => setEditingStudent(null)} className="btn-ghost">Cancel</button>
+              <button type="button" onClick={updateStudent} className="btn-primary">Update Profile</button>
             </div>
           </div>
         </div>

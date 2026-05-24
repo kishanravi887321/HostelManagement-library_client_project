@@ -209,35 +209,35 @@ export default function Library() {
   }, 0);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Library Management System</h1>
+    <div className="space-y-8">
+      <h1 className="text-3xl font-semibold text-slate-900">Library Management</h1>
 
       {/* ================= FILTER SUMS VISUALIZER CARDS ================= */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-blue-500 text-white p-4 rounded shadow-sm">
-          <h2 className="text-xs uppercase tracking-wider opacity-90 font-semibold">Students Displayed</h2>
-          <p className="text-2xl font-bold mt-1">{totalStudentsCount} Profiles</p>
+        <div className="stat-card motion-rise" data-tone="teal">
+          <h2 className="stat-label">Students Displayed</h2>
+          <p className="stat-value">{totalStudentsCount} Profiles</p>
         </div>
-        <div className="bg-purple-600 text-white p-4 rounded shadow-sm">
-          <h2 className="text-xs uppercase tracking-wider opacity-90 font-semibold">Collected Online</h2>
-          <p className="text-2xl font-bold mt-1">₹{onlinePaidAmount}</p>
+        <div className="stat-card motion-rise" data-tone="blue">
+          <h2 className="stat-label">Collected Online</h2>
+          <p className="stat-value">₹{onlinePaidAmount}</p>
         </div>
-        <div className="bg-amber-600 text-white p-4 rounded shadow-sm">
-          <h2 className="text-xs uppercase tracking-wider opacity-90 font-semibold">Collected Cash</h2>
-          <p className="text-2xl font-bold mt-1">₹{cashPaidAmount}</p>
+        <div className="stat-card motion-rise" data-tone="amber">
+          <h2 className="stat-label">Collected Cash</h2>
+          <p className="stat-value">₹{cashPaidAmount}</p>
         </div>
-        <div className="bg-green-500 text-white p-4 rounded shadow-sm">
-          <h2 className="text-xs uppercase tracking-wider opacity-90 font-semibold">Total Collected</h2>
-          <p className="text-2xl font-bold mt-1">₹{filteredPaidAmount}</p>
+        <div className="stat-card motion-rise" data-tone="forest">
+          <h2 className="stat-label">Total Collected</h2>
+          <p className="stat-value">₹{filteredPaidAmount}</p>
         </div>
-        <div className="bg-red-500 text-white p-4 rounded shadow-sm">
-          <h2 className="text-xs uppercase tracking-wider opacity-90 font-semibold">Pending Amount</h2>
-          <p className="text-2xl font-bold mt-1">₹{filteredPendingAmount}</p>
+        <div className="stat-card motion-rise" data-tone="rose">
+          <h2 className="stat-label">Pending Amount</h2>
+          <p className="stat-value">₹{filteredPendingAmount}</p>
         </div>
       </div>
 
       {/* ================= ADD NEW STUDENT FORM ================= */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-white p-4 rounded shadow-sm">
+      <div className="panel p-5 grid grid-cols-1 md:grid-cols-3 gap-3">
         <input
           className="border p-2 rounded text-sm"
           placeholder="Name"
@@ -330,14 +330,14 @@ export default function Library() {
 
         <button
           onClick={addStudent}
-          className="bg-green-600 text-white p-2 col-span-full rounded font-medium hover:bg-green-700 transition shadow-sm"
+          className="btn-primary col-span-full"
         >
           Add Student
         </button>
       </div>
 
       {/* ================= INTERACTIVE MONTH FILTERS CONTROL BAR ================= */}
-      <div className="bg-gray-50 p-4 rounded border border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="panel-soft p-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center space-x-2">
             <span className="font-semibold text-sm text-gray-700">Filter Period:</span>
@@ -382,9 +382,9 @@ export default function Library() {
       </div>
 
       {/* ================= DATA TABLE VIEW ================= */}
-      <div className="bg-white rounded shadow-sm overflow-hidden border border-gray-100">
+      <div className="table-shell">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-100 border-b font-semibold text-gray-600 text-sm">
+          <thead>
             <tr>
               <th className="p-3">Name</th>
               <th className="p-3">Phone</th>
@@ -408,7 +408,7 @@ export default function Library() {
                 <td className="p-3 text-green-600 font-medium">₹{s.amountPaid || 0}</td>
                 <td className="p-3 text-red-500 font-medium">₹{s.amountDue || 0}</td>
                 <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${s.paymentMode === 'Cash' ? 'bg-orange-50 text-orange-600 border' : 'bg-purple-50 text-purple-600 border'}`}>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${s.paymentMode === 'Cash' ? 'bg-orange-50 text-orange-600 border' : 'bg-teal-50 text-teal-700 border'}`}>
                     {s.paymentMode || "Online"}
                   </span>
                 </td>
@@ -434,7 +434,7 @@ export default function Library() {
                 <td className="p-3 space-x-2 whitespace-nowrap">
                   <button
                     onClick={() => handleEditClick(s)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition"
+                    className="btn-primary text-xs px-3 py-1"
                   >
                     Edit
                   </button>
@@ -544,8 +544,8 @@ export default function Library() {
               </select>
             </div>
             <div className="flex justify-end space-x-2 pt-3 border-t text-sm font-medium">
-              <button type="button" onClick={() => setEditingStudent(null)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Cancel</button>
-              <button type="button" onClick={updateStudent} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Update</button>
+              <button type="button" onClick={() => setEditingStudent(null)} className="btn-ghost">Cancel</button>
+              <button type="button" onClick={updateStudent} className="btn-primary">Update</button>
             </div>
           </div>
         </div>
