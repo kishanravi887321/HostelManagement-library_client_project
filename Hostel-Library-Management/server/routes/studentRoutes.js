@@ -1,7 +1,12 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import Student from "../models/Student.js";
+import {
+  addStudent,
+  getStudents,
+  deleteStudent,
+  updateStudent,
+} from "../controllers/studentController.js";
 
 const router = express.Router();
 
@@ -19,53 +24,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // ADD student (Updated to accept a single file named 'identityProof')
-router.post("/add", upload.single("identityProof"), async (req, res) => {
-  try {
-    // Combine standard form text data with the newly generated filename
-    const studentData = {
-      ...req.body,
-      identityProof: req.file ? req.file.filename : "No file uploaded"
-    };
-
-    const student = new Student(studentData);
-    await student.save();
-    res.json(student);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+router.post("/add", upload.single("identityProof"), addStudent);
 
 // GET all students
-router.get("/", async (req, res) => {
-  try {
-    const students = await Student.find();
-    res.json(students);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+router.get("/", getStudents);
 
 // DELETE student
-router.delete("/:id", async (req, res) => {
-  try {
-    await Student.findByIdAndDelete(req.params.id);
-    res.json({ message: "Student deleted" });
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+router.delete("/:id", deleteStudent);
 
-router.put("/:id", async (req, res) => {
-  try {
-    const updatedStudent = await Student.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    res.json(updatedStudent);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+router.put("/:id", updateStudent);
 
 export default router;
