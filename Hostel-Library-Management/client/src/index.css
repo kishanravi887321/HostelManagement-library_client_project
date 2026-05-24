@@ -270,6 +270,11 @@ h6 {
 	box-shadow: 0 20px 35px rgba(15, 118, 110, 0.3);
 }
 
+.btn-primary-sm {
+	padding: 0.35rem 0.8rem;
+	font-size: 0.75rem;
+}
+
 .btn-ghost {
 	background: #ffffff;
 	color: #b91c1c;
@@ -283,6 +288,11 @@ h6 {
 .btn-ghost:hover {
 	background: #fff1f2;
 	border-color: #fecdd3;
+}
+
+.btn-ghost-sm {
+	padding: 0.35rem 0.8rem;
+	font-size: 0.75rem;
 }
 
 .seat-tile {
