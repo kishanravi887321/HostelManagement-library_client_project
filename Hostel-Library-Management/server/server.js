@@ -1,46 +1,52 @@
-import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
-import path from "path"; // 🆕 Imported path module for managing file paths
+import fs from "fs";
+import http from "http";
+import https from "https";
+import path from "path";
 import { fileURLToPath } from "url";
-import libraryRoutes from "./routes/libraryRoutes.js";
+import app from "./app.js";
 import connectDB from "./config/db.js";
-import studentRoutes from "./routes/studentRoutes.js";
-import hostelRoutes from "./routes/hostelRoutes.js";
-import dashboardRoutes from "./routes/dashboardRoutes.js";
-import authRoutes from "./routes/authRoutes.js";
 import "./utils/monthlyReset.js";
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // DB connection (ONLY ONCE)
 connectDB();
 
-const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-app.use(cors());
-app.use(express.json());
+const PORT = process.env.PORT || 5000;
+const sslKeyPath = process.env.SSL_KEY_PATH;
+const sslCertPath = process.env.SSL_CERT_PATH;
+const sslCaPath = process.env.SSL_CA_PATH;
 
-// 🆕 Step 2: Serve the uploads folder statically so browsers can view files inside it
-app.use("/uploads", express.static(path.resolve(__dirname, "uploads")));
+const toAbsolutePath = (filePath) => {
+  if (!filePath) {
+    return filePath;
+  }
+  return path.isAbsolute(filePath) ? filePath : path.resolve(__dirname, filePath);
+};
 
-// Routes
-app.use("/api/library", libraryRoutes);
-app.use("/api/hostel", hostelRoutes);
-app.use("/api/students", studentRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/dashboard", dashboardRoutes);
+let server;
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("Hostel Library API Running");
-});
+if (sslKeyPath && sslCertPath) {
+  const httpsOptions = {
+    key: fs.readFileSync(toAbsolutePath(sslKeyPath)),
+    cert: fs.readFileSync(toAbsolutePath(sslCertPath)),
+  };
 
-const PORT = 5000;
+  if (sslCaPath) {
+    httpsOptions.ca = fs.readFileSync(toAbsolutePath(sslCaPath));
+  }
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+  server = https.createServer(httpsOptions, app);
+  server.listen(PORT, () => {
+    console.log(`HTTPS server running on port ${PORT}`);
+  });
+} else {
+  server = http.createServer(app);
+  server.listen(PORT, () => {
+    console.log(`HTTP server running on port ${PORT}`);
+  });
+}
