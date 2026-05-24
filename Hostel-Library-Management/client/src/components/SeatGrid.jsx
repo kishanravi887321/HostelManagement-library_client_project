@@ -204,17 +204,17 @@ const SeatGrid = () => {
     });
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm relative">
+    <div className="panel-soft p-6 relative">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-xl font-bold text-gray-800">Library Seat Matrix</h2>
           <p className="text-sm text-gray-500 mt-1">Live overview of library desk occupancy</p>
         </div>
-        <button 
+        <button
           onClick={fetchStudents}
-          className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-md transition duration-150"
+          className="btn-ghost text-xs"
         >
-          🔄 Refresh
+          Refresh
         </button>
       </div>
 
@@ -235,11 +235,7 @@ const SeatGrid = () => {
             <button
               key={seat}
               onClick={() => handleClick(seat)}
-              className={`w-16 h-16 rounded-xl font-bold text-white flex flex-col items-center justify-center shadow-sm transform transition active:scale-95 duration-100 ${
-                isOccupied 
-                  ? "bg-red-500 hover:bg-red-600 shadow-red-100" 
-                  : "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100"
-              }`}
+              className={`seat-tile ${isOccupied ? "seat-tile-occupied" : "seat-tile-available"}`}
             >
               <span className="text-sm">#{seat}</span>
               {isOccupied && <span className="text-[9px] font-normal tracking-wide uppercase opacity-90 mt-0.5">Busy</span>}
@@ -249,19 +245,19 @@ const SeatGrid = () => {
       </div>
 
       {/* Legend */}
-      <div className="flex gap-4 justify-center mt-6 pt-4 border-t border-gray-50 text-xs font-medium text-gray-600">
+      <div className="flex gap-4 justify-center mt-6 pt-4 border-t border-gray-100 text-xs font-medium text-gray-600">
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 bg-emerald-500 rounded-full inline-block"></span>
+          <span className="w-3 h-3 bg-teal-500 rounded-full inline-block"></span>
           <span>Available (Click to Assign)</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 bg-red-500 rounded-full inline-block"></span>
+          <span className="w-3 h-3 bg-rose-500 rounded-full inline-block"></span>
           <span>Occupied ({students.length})</span>
         </div>
       </div>
 
       {/* Allocated Seats List */}
-      <div className="mt-8 bg-white rounded-lg border border-gray-100 shadow-sm">
+      <div className="mt-8 table-shell">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <div>
             <h3 className="text-base font-bold text-gray-800">Allocated Seats</h3>
@@ -275,7 +271,7 @@ const SeatGrid = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+              <thead>
                 <tr>
                   <th className="px-4 py-3">Seat</th>
                   <th className="px-4 py-3">Name</th>
@@ -323,7 +319,7 @@ const SeatGrid = () => {
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => openEditModal(student.seatNo, student)}
-                        className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded"
+                        className="btn-primary text-xs px-3 py-1.5"
                       >
                         Edit
                       </button>

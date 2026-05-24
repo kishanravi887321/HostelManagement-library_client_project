@@ -66,17 +66,18 @@ export default function Dashboard() {
   }, [filterType, customMonth]); // Triggers immediately when dropdown state modifiers are flipped
 
   return (
-    <div className="p-6 space-y-8">
-      
-      {/* 1. Header Area with Filters */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-4">
-        <h1 className="text-2xl font-bold text-gray-800 select-none">Dashboard Overview</h1>
+    <div className="space-y-8">
+      <div className="panel p-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.3em] text-amber-700">Performance Snapshot</p>
+          <h1 className="text-3xl font-semibold text-slate-900">Dashboard Overview</h1>
+          <p className="text-sm text-slate-500">Track revenue, occupancy, and live student metrics.</p>
+        </div>
 
-        {/* Month Filter Selector */}
-        <div className="flex flex-wrap items-center gap-2 bg-gray-50 p-2 rounded border border-gray-200">
-          <span className="text-sm font-semibold text-gray-600 px-1">Filter Period:</span>
+        <div className="flex flex-wrap items-center gap-2 bg-white/70 border border-[var(--border)] rounded-xl px-3 py-2">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Filter Period</span>
           <select
-            className="border p-1.5 rounded text-sm bg-white font-medium focus:outline-pink-500"
+            className="border border-[var(--border)] rounded-lg px-2 py-1 text-sm bg-white"
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
@@ -89,7 +90,7 @@ export default function Dashboard() {
           {filterType === "custom" && (
             <input
               type="month"
-              className="border p-1 rounded text-sm bg-white focus:outline-pink-500"
+              className="border border-[var(--border)] rounded-lg px-2 py-1 text-sm bg-white"
               value={customMonth}
               onChange={(e) => setCustomMonth(e.target.value)}
             />
@@ -97,63 +98,40 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ================= 🎨 HIGH-CONTRAST STATS GRID ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-        
-        {/* 🟠 Hostel Students Card */}
-        <div className="bg-orange-500 p-5 rounded shadow-md border border-orange-600 text-white flex flex-col justify-between">
-          <h2 className="text-orange-100 font-semibold tracking-wide uppercase text-xs">Hostel Students</h2>
-          <p className="text-3xl font-extrabold mt-2 text-white drop-shadow-sm">{stats.hostelCount}</p>
+        <div className="stat-card motion-rise" data-tone="ember">
+          <p className="stat-label">Hostel Students</p>
+          <p className="stat-value">{stats.hostelCount}</p>
         </div>
-
-        {/* 🟡 Library Students Card */}
-        <div className="bg-yellow-400 p-5 rounded shadow-md border border-yellow-500 text-white flex flex-col justify-between">
-          <h2 className="text-amber-950/80 font-bold tracking-wide uppercase text-xs">Library Students</h2>
-          <p className="text-3xl font-extrabold mt-2 text-white drop-shadow-sm">{stats.libraryCount}</p>
+        <div className="stat-card motion-rise" data-tone="amber">
+          <p className="stat-label">Library Students</p>
+          <p className="stat-value">{stats.libraryCount}</p>
         </div>
-
-        {/* 🔵 Online Paid Card */}
-        <div className="bg-blue-600 p-5 rounded shadow-md border border-blue-700 text-white flex flex-col justify-between">
-          <h2 className="text-blue-100 font-semibold tracking-wide uppercase text-xs">Paid Online</h2>
-          <p className="text-3xl font-extrabold mt-2 text-white drop-shadow-sm">
-            ₹ {stats.onlineRevenue || 0}
-          </p>
+        <div className="stat-card motion-rise" data-tone="blue">
+          <p className="stat-label">Paid Online</p>
+          <p className="stat-value">₹ {stats.onlineRevenue || 0}</p>
         </div>
-
-        {/* 🟤 Cash Collected Card */}
-        <div className="bg-amber-700 p-5 rounded shadow-md border border-amber-800 text-white flex flex-col justify-between">
-          <h2 className="text-amber-100 font-semibold tracking-wide uppercase text-xs">Paid by Cash</h2>
-          <p className="text-3xl font-extrabold mt-2 text-white drop-shadow-sm">
-            ₹ {stats.cashRevenue || 0}
-          </p>
+        <div className="stat-card motion-rise" data-tone="amber">
+          <p className="stat-label">Paid by Cash</p>
+          <p className="stat-value">₹ {stats.cashRevenue || 0}</p>
         </div>
-
-        {/* 🟢 Total Paid Fees Card */}
-        <div className="bg-green-600 p-5 rounded shadow-md border border-green-700 text-white flex flex-col justify-between">
-          <h2 className="text-green-100 font-semibold tracking-wide uppercase text-xs">Total Paid</h2>
-          <p className="text-3xl font-extrabold mt-2 text-white drop-shadow-sm">
-            ₹ {stats.paidFees}
-          </p>
+        <div className="stat-card motion-rise" data-tone="forest">
+          <p className="stat-label">Total Paid</p>
+          <p className="stat-value">₹ {stats.paidFees}</p>
         </div>
-
-        {/* 🔴 Pending Fees Card */}
-        <div className="bg-red-500 p-5 rounded shadow-md border border-red-600 text-white flex flex-col justify-between">
-          <h2 className="text-red-100 font-semibold tracking-wide uppercase text-xs">Pending Fees</h2>
-          <p className="text-3xl font-extrabold mt-2 text-white drop-shadow-sm">
-            ₹ {stats.pendingFees}
-          </p>
+        <div className="stat-card motion-rise" data-tone="rose">
+          <p className="stat-label">Pending Fees</p>
+          <p className="stat-value">₹ {stats.pendingFees}</p>
         </div>
-
       </div>
 
-      {/* 3. Visual Seat Allocation Grid Section */}
-      <div className="bg-purple-50 p-6 rounded shadow-md border border-purple-200">
+      <div className="panel p-6">
         <div className="mb-4">
-          <h2 className="text-lg font-bold text-purple-900">Seat Allocations Status</h2>
+          <h2 className="text-lg font-semibold text-slate-900">Seat Allocations Status</h2>
+          <p className="text-sm text-slate-500">Live overview of library desk occupancy.</p>
         </div>
         <SeatGrid />
       </div>
-
     </div>
   );
 }
