@@ -362,134 +362,110 @@ h6 {
 	font-size: 0.9rem;
 }
 
-.payment-list {
-	display: grid;
-	gap: 1rem;
-	padding: 1.2rem;
-}
-
-.payment-card {
+.seat-roster {
 	background: #ffffff;
 	border: 1px solid var(--border);
 	border-radius: 1rem;
-	padding: 1.1rem 1.2rem;
+	overflow: hidden;
+}
+
+.seat-roster-head {
 	display: grid;
-	grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 0.9fr);
+	grid-template-columns: 0.7fr 1.6fr 1.2fr 1.3fr 1.2fr 0.9fr;
 	gap: 1rem;
+	padding: 0.85rem 1.2rem;
+	background: #f8f3ea;
+	text-transform: uppercase;
+	letter-spacing: 0.16em;
+	font-size: 0.62rem;
+	font-weight: 700;
+	color: var(--muted);
+	border-bottom: 1px solid var(--border);
+}
+
+.seat-roster-actions-title {
+	text-align: right;
+}
+
+.seat-roster-body {
+	display: grid;
+}
+
+.seat-roster-row {
+	display: grid;
+	grid-template-columns: 0.7fr 1.6fr 1.2fr 1.3fr 1.2fr 0.9fr;
+	gap: 1rem;
+	padding: 1rem 1.2rem;
+	border-bottom: 1px solid #f1ede3;
 	align-items: center;
-	box-shadow: 0 12px 26px rgba(15, 23, 42, 0.06);
-	transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.payment-card:hover {
-	transform: translateY(-1px);
-	box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+.seat-roster-row:last-child {
+	border-bottom: none;
 }
 
-.payment-card-main {
+.seat-roster-seat {
 	display: flex;
 	flex-direction: column;
-	gap: 0.4rem;
+	gap: 0.25rem;
 }
 
-.payment-seat {
-	font-size: 0.72rem;
-	font-weight: 700;
+.seat-label {
+	font-size: 0.6rem;
 	text-transform: uppercase;
 	letter-spacing: 0.14em;
-	color: #0f766e;
+	color: var(--muted);
+	font-weight: 600;
 }
 
-.payment-name {
+.seat-number {
 	font-size: 1rem;
 	font-weight: 700;
 	color: var(--ink);
 }
 
-.payment-meta {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.45rem;
-	font-size: 0.72rem;
-	color: var(--muted);
-}
-
-.payment-meta span {
-	background: #f8fafc;
-	border: 1px solid var(--border);
-	padding: 0.2rem 0.55rem;
-	border-radius: 999px;
-}
-
-.payment-chips {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.4rem;
-	margin-top: 0.2rem;
-}
-
-.payment-chip {
-	font-size: 0.68rem;
-	font-weight: 600;
-	padding: 0.2rem 0.55rem;
-	border-radius: 999px;
-	border: 1px solid var(--border);
-	background: #ffffff;
-}
-
-.payment-chip[data-tone="paid"] {
-	color: #166534;
-	background: #dcfce7;
-	border-color: #bbf7d0;
-}
-
-.payment-chip[data-tone="pending"] {
-	color: #b91c1c;
-	background: #fee2e2;
-	border-color: #fecaca;
-}
-
-.payment-chip[data-tone="info"] {
-	color: #1d4ed8;
-	background: #eff6ff;
-	border-color: #bfdbfe;
-}
-
-.payment-chip[data-tone="muted"] {
-	color: #6b7280;
-	background: #f3f4f6;
-	border-color: #e5e7eb;
-}
-
-.payment-card-metrics {
-	display: grid;
-	gap: 0.55rem;
-}
-
-.payment-amount {
-	display: flex;
-	justify-content: space-between;
-	font-size: 0.75rem;
-}
-
-.payment-amount .label {
-	color: var(--muted);
-	font-size: 0.62rem;
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	font-weight: 600;
-}
-
-.payment-amount .value {
+.seat-roster-student .name {
+	font-size: 0.95rem;
 	font-weight: 700;
 	color: var(--ink);
 }
 
-.payment-amount .value.is-positive {
+.seat-roster-student .sub {
+	font-size: 0.72rem;
+	color: var(--muted);
+}
+
+.seat-roster-contact {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	font-size: 0.78rem;
+	color: var(--ink);
+}
+
+.seat-roster-contact .sub {
+	font-size: 0.7rem;
+	color: var(--muted);
+}
+
+.seat-roster-payment {
+	display: flex;
+	flex-direction: column;
+	gap: 0.45rem;
+}
+
+.payment-amounts {
+	display: flex;
+	gap: 0.6rem;
+	font-weight: 700;
+	font-size: 0.85rem;
+}
+
+.payment-amounts .paid {
 	color: var(--success);
 }
 
-.payment-amount .value.is-negative {
+.payment-amounts .due {
 	color: var(--danger);
 }
 
@@ -510,42 +486,105 @@ h6 {
 	background: linear-gradient(90deg, #f97316, #dc2626);
 }
 
-.payment-percent {
+.payment-sub {
+	display: flex;
+	justify-content: space-between;
 	font-size: 0.7rem;
 	color: var(--muted);
-	text-align: right;
 }
 
-.payment-card-actions {
+.payment-percent {
+	font-weight: 600;
+}
+
+.payment-note {
+	color: var(--muted);
+}
+
+.seat-roster-status {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+}
+
+.status-pill {
+	font-size: 0.68rem;
+	font-weight: 600;
+	padding: 0.2rem 0.55rem;
+	border-radius: 999px;
+	border: 1px solid var(--border);
+	background: #ffffff;
+}
+
+.status-pill[data-tone="paid"] {
+	color: #166534;
+	background: #dcfce7;
+	border-color: #bbf7d0;
+}
+
+.status-pill[data-tone="pending"] {
+	color: #b91c1c;
+	background: #fee2e2;
+	border-color: #fecaca;
+}
+
+.status-pill[data-tone="info"] {
+	color: #1d4ed8;
+	background: #eff6ff;
+	border-color: #bfdbfe;
+}
+
+.status-pill[data-tone="muted"] {
+	color: #6b7280;
+	background: #f3f4f6;
+	border-color: #e5e7eb;
+}
+
+.seat-roster-actions {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-end;
 	gap: 0.5rem;
 }
 
-.payment-link {
+.seat-roster-link {
 	font-size: 0.75rem;
 	font-weight: 600;
 	color: #1d4ed8;
 	text-decoration: none;
 }
 
-.payment-link:hover {
+.seat-roster-link:hover {
 	text-decoration: underline;
 }
 
-.payment-link.muted {
+.seat-roster-empty {
+	font-size: 0.75rem;
 	color: var(--muted);
 }
 
 @media (max-width: 900px) {
-	.payment-card {
-		grid-template-columns: 1fr;
-		align-items: flex-start;
+	.seat-roster-head {
+		display: none;
 	}
 
-	.payment-card-actions {
+	.seat-roster-body {
+		gap: 0.8rem;
+		padding: 0.8rem;
+	}
+
+	.seat-roster-row {
+		grid-template-columns: 1fr;
+		border: 1px solid var(--border);
+		border-radius: 1rem;
+		padding: 1rem;
+		box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+	}
+
+	.seat-roster-actions {
 		align-items: flex-start;
+		flex-direction: row;
+		flex-wrap: wrap;
 	}
 }
 
