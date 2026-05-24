@@ -385,145 +385,220 @@ const SeatGrid = () => {
 
       {/* --- ALLOCATION MODAL POPUP --- */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-xl border border-gray-100 m-4 max-h-[90vh] overflow-y-auto space-y-4">
-            
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                {isEditing ? "✏️ Editing" : "🪑 Allocating"} <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded text-sm border border-emerald-100">Seat #{selectedSeat}</span>
-              </h3>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl font-medium">&times;</button>
+        <div className="modal-backdrop">
+          <div className="modal-card">
+            <div className="modal-head">
+              <div className="modal-title">
+                <span className="modal-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" />
+                    <path d="M4 20a8 8 0 0 1 16 0" />
+                  </svg>
+                </span>
+                <div>
+                  <h3>{isEditing ? "Edit Seat" : "Allocate Seat"} <span className="modal-seat-chip">Seat #{selectedSeat}</span></h3>
+                  <p>Update the seat allocation and student details.</p>
+                </div>
+              </div>
+              <button onClick={closeModal} className="modal-close" aria-label="Close">&times;</button>
             </div>
 
-            <form onSubmit={handleFormSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Student Name</label>
-                <input 
-                  type="text" 
-                  name="name" 
-                  required 
-                  value={formData.name} 
-                  onChange={handleInputChange}
-                  placeholder="Enter full name"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Phone Number</label>
-                  <input 
-                    type="tel" 
-                    name="phone" 
-                    required 
-                    value={formData.phone} 
-                    onChange={handleInputChange}
-                    placeholder="Mobile number"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Date of Joining</label>
-                  <input 
-                    type="date" 
-                    name="dateOfJoining"
+            <form onSubmit={handleFormSubmit} className="modal-form">
+              <div className="field">
+                <label className="field-label">Student Name *</label>
+                <div className="field-input">
+                  <span className="field-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" />
+                      <path d="M4 20a8 8 0 0 1 16 0" />
+                    </svg>
+                  </span>
+                  <input
+                    type="text"
+                    name="name"
                     required
-                    value={formData.dateOfJoining} 
+                    value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition"
+                    placeholder="Enter full name"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Seat Number</label>
-                  <input type="text" disabled value={`#${selectedSeat}`} className="w-full px-3 py-2 border border-gray-200 bg-gray-50 rounded-lg text-sm text-gray-500 font-bold cursor-not-allowed" />
+              <div className="field-grid">
+                <div className="field">
+                  <label className="field-label">Phone Number *</label>
+                  <div className="field-input">
+                    <span className="field-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 16.9v3a2 2 0 0 1-2.2 2 20 20 0 0 1-8.7-3.1 19.8 19.8 0 0 1-6.1-6.1A20 20 0 0 1 2 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7 12.8 12.8 0 0 0 .7 2.8 2 2 0 0 1-.5 2.1L8 9a16 16 0 0 0 7 7l.4-.2a2 2 0 0 1 2.1-.5 12.8 12.8 0 0 0 2.8.7 2 2 0 0 1 1.7 1.9Z" />
+                      </svg>
+                    </span>
+                    <input
+                      type="tel"
+                      name="phone"
+                      required
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="Mobile number"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Student Type</label>
-                  <select name="studentType" value={formData.studentType} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition">
-                    <option value="Hosteler">Hosteler</option>
-                    <option value="Day Scholar">Day Scholar</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Amount Paid (₹)</label>
-                  <input 
-                    type="number" 
-                    name="amountPaid" 
-                    value={formData.amountPaid} 
-                    onChange={handleInputChange}
-                    placeholder="Amount"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Amount Due (₹)</label>
-                  <input 
-                    type="number" 
-                    name="amountDue" 
-                    value={formData.amountDue} 
-                    placeholder="Due parameters"
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      const numericDue = Number(value) || 0;
-                      setFormData(prev => ({
-                        ...prev,
-                        amountDue: value,
-                        feeStatus: numericDue > 0 ? "Pending" : "Paid"
-                      }));
-                    }}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition"
-                  />
+                <div className="field">
+                  <label className="field-label">Date of Joining *</label>
+                  <div className="field-input">
+                    <span className="field-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <path d="M16 2v4M8 2v4M3 10h18" />
+                      </svg>
+                    </span>
+                    <input
+                      type="date"
+                      name="dateOfJoining"
+                      required
+                      value={formData.dateOfJoining}
+                      onChange={handleInputChange}
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Payment Mode</label>
-                  <select name="paymentMode" value={formData.paymentMode} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition">
-                    <option value="Online">Online Payment</option>
-                    <option value="Cash">Cash Payment</option>
-                  </select>
+              <div className="field-grid">
+                <div className="field">
+                  <label className="field-label">Seat Number *</label>
+                  <div className="field-input">
+                    <span className="field-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="4" y="5" width="16" height="10" rx="2" />
+                        <path d="M4 19h16" />
+                      </svg>
+                    </span>
+                    <input type="text" disabled value={`#${selectedSeat}`} />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Last Payment Date</label>
-                  <input 
-                    type="date" 
-                    name="lastPaymentDate"
-                    value={formData.lastPaymentDate} 
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 transition"
-                  />
+                <div className="field">
+                  <label className="field-label">Student Type *</label>
+                  <div className="field-input">
+                    <span className="field-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 3l9 4.5-9 4.5-9-4.5L12 3z" />
+                        <path d="M3 10.5V17l9 4.5 9-4.5v-6.5" />
+                      </svg>
+                    </span>
+                    <select name="studentType" value={formData.studentType} onChange={handleInputChange}>
+                      <option value="Hosteler">Hosteler</option>
+                      <option value="Day Scholar">Day Scholar</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Identity Proof (PDF Document)</label>
+              <div className="field-grid">
+                <div className="field">
+                  <label className="field-label">Amount Paid (₹) *</label>
+                  <div className="field-input">
+                    <span className="field-icon" aria-hidden="true">₹</span>
+                    <input
+                      type="number"
+                      name="amountPaid"
+                      value={formData.amountPaid}
+                      onChange={handleInputChange}
+                      placeholder="Amount"
+                    />
+                  </div>
+                </div>
+                <div className="field">
+                  <label className="field-label">Amount Due (₹) *</label>
+                  <div className="field-input">
+                    <span className="field-icon" aria-hidden="true">₹</span>
+                    <input
+                      type="number"
+                      name="amountDue"
+                      value={formData.amountDue}
+                      placeholder="Amount"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const numericDue = Number(value) || 0;
+                        setFormData(prev => ({
+                          ...prev,
+                          amountDue: value,
+                          feeStatus: numericDue > 0 ? "Pending" : "Paid"
+                        }));
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="field-grid">
+                <div className="field">
+                  <label className="field-label">Payment Mode *</label>
+                  <div className="field-input">
+                    <span className="field-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="5" width="18" height="14" rx="2" />
+                        <path d="M3 10h18" />
+                      </svg>
+                    </span>
+                    <select name="paymentMode" value={formData.paymentMode} onChange={handleInputChange}>
+                      <option value="Online">Online Payment</option>
+                      <option value="Cash">Cash Payment</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="field">
+                  <label className="field-label">Last Payment Date *</label>
+                  <div className="field-input">
+                    <span className="field-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <path d="M16 2v4M8 2v4M3 10h18" />
+                      </svg>
+                    </span>
+                    <input
+                      type="date"
+                      name="lastPaymentDate"
+                      value={formData.lastPaymentDate}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="field">
+                <label className="field-label">Identity Proof (PDF Document)</label>
                 {isEditing ? (
-                  <div className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-                    File updates are available from the Library page.
+                  <div className="upload-box is-disabled">
+                    <div className="upload-info">
+                      <span className="upload-title">Upload PDF Document</span>
+                      <span className="upload-sub">File updates are available from the Library page.</span>
+                    </div>
+                    <button type="button" className="btn-secondary" disabled>Browse Files</button>
                   </div>
                 ) : (
-                  <input 
-                    type="file" 
-                    accept="application/pdf"
-                    onChange={(e) => setFileObject(e.target.files[0] || null)}
-                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 file:cursor-pointer hover:file:bg-gray-100"
-                  />
+                  <label className="upload-box">
+                    <div className="upload-info">
+                      <span className="upload-title">Upload PDF Document</span>
+                      <span className="upload-sub">Drop your PDF here or browse files.</span>
+                    </div>
+                    <span className="btn-secondary">Browse Files</span>
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={(e) => setFileObject(e.target.files[0] || null)}
+                      className="sr-only"
+                    />
+                  </label>
                 )}
               </div>
 
-              <div className="text-xs font-semibold text-gray-400 px-0.5">
-                Auto-Assigned Status: <span className={formData.feeStatus === "Paid" ? "text-green-600 font-bold" : "text-red-500 font-bold"}>{formData.feeStatus}</span>
+              <div className="status-banner" data-tone={formData.feeStatus === "Paid" ? "paid" : "pending"}>
+                <span className="status-title">Auto-Assigned Status</span>
+                <span className="status-value">{formData.feeStatus}</span>
               </div>
 
-              <div className="flex gap-3 pt-3 justify-end text-sm border-t border-gray-100">
-                <button type="button" onClick={closeModal} className="btn-ghost">Cancel</button>
+              <div className="modal-actions">
+                <button type="button" onClick={closeModal} className="btn-muted">Cancel</button>
                 <button type="submit" disabled={formSubmitting} className={`btn-primary ${formSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}>
                   {formSubmitting ? (isEditing ? "Updating..." : "Allocating...") : (isEditing ? "Update Seat" : "Assign Student")}
                 </button>
