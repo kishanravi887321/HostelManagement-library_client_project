@@ -6,6 +6,7 @@ const SeatGrid = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isGridOpen, setIsGridOpen] = useState(false);
 
   // Modal & Form States
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,6 +46,8 @@ const SeatGrid = () => {
     if (Number.isNaN(date.getTime())) return String(value);
     return date.toLocaleDateString("en-IN");
   };
+
+  const formatCurrency = (value) => `₹${Number(value) || 0}`;
 
   useEffect(() => {
     fetchStudents();
@@ -203,6 +206,11 @@ const SeatGrid = () => {
       return aNum - bNum;
     });
 
+  const totalSeats = 41;
+  const seatNumbers = Array.from({ length: totalSeats }, (_, i) => i + 1);
+  const occupiedCount = allocatedSeats.length;
+  const availableCount = Math.max(totalSeats - occupiedCount, 0);
+
   return (
     <div className="panel-soft p-6 relative">
       <div className="flex justify-between items-center mb-6">
@@ -210,12 +218,23 @@ const SeatGrid = () => {
           <h2 className="text-xl font-bold text-gray-800">Library Seat Matrix</h2>
           <p className="text-sm text-gray-500 mt-1">Live overview of library desk occupancy</p>
         </div>
-        <button
-          onClick={fetchStudents}
-          className="btn-ghost text-xs"
-        >
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={fetchStudents}
+            className="btn-ghost text-xs"
+          >
+            Refresh
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsGridOpen((prev) => !prev)}
+            className="btn-primary btn-primary-sm"
+            aria-expanded={isGridOpen}
+          >
+            {isGridOpen ? "Hide Grid" : "Show Grid"}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -224,37 +243,50 @@ const SeatGrid = () => {
         </div>
       )}
 
-      {/* Grid Display */}
-      <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 max-w-md mx-auto justify-items-center">
-        {Array.from({ length: 41 }, (_, i) => { 
-          const seat = i + 1;
-          const student = getOccupyingStudent(seat);
-          const isOccupied = !!student;
-
-          return (
-            <button
-              key={seat}
-              onClick={() => handleClick(seat)}
-              className={`seat-tile ${isOccupied ? "seat-tile-occupied" : "seat-tile-available"}`}
-            >
-              <span className="text-sm">#{seat}</span>
-              {isOccupied && <span className="text-[9px] font-normal tracking-wide uppercase opacity-90 mt-0.5">Busy</span>}
-            </button>
-          );
-        })}
+      <div className="seat-grid-meta-bar">
+        <span className="seat-grid-chip">Total Seats: {totalSeats}</span>
+        <span className="seat-grid-chip" data-tone="occupied">Occupied: {occupiedCount}</span>
+        <span className="seat-grid-chip" data-tone="available">Available: {availableCount}</span>
       </div>
 
-      {/* Legend */}
-      <div className="flex gap-4 justify-center mt-6 pt-4 border-t border-gray-100 text-xs font-medium text-gray-600">
-        <div className="flex items-center gap-2">
-          <span className="w-3 h-3 bg-teal-500 rounded-full inline-block"></span>
-          <span>Available (Click to Assign)</span>
+      {isGridOpen ? (
+        <>
+          {/* Grid Display */}
+          <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 max-w-md mx-auto justify-items-center">
+            {seatNumbers.map((seat) => {
+              const student = getOccupyingStudent(seat);
+              const isOccupied = !!student;
+
+              return (
+                <button
+                  key={seat}
+                  onClick={() => handleClick(seat)}
+                  className={`seat-tile ${isOccupied ? "seat-tile-occupied" : "seat-tile-available"}`}
+                >
+                  <span className="text-sm">#{seat}</span>
+                  {isOccupied && <span className="text-[9px] font-normal tracking-wide uppercase opacity-90 mt-0.5">Busy</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Legend */}
+          <div className="flex gap-4 justify-center mt-6 pt-4 border-t border-gray-100 text-xs font-medium text-gray-600">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-teal-500 rounded-full inline-block"></span>
+              <span>Available (Click to Assign)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 bg-rose-500 rounded-full inline-block"></span>
+              <span>Occupied ({occupiedCount})</span>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="seat-grid-placeholder">
+          Seat grid is hidden. Click "Show Grid" to view and assign seats.
         </div>
-        <div className="flex items-center gap-2">
-          <span className="w-3 h-3 bg-rose-500 rounded-full inline-block"></span>
-          <span>Occupied ({students.length})</span>
-        </div>
-      </div>
+      )}
 
       {/* Allocated Seats List */}
       <div className="mt-8 table-shell">
@@ -269,65 +301,76 @@ const SeatGrid = () => {
         {allocatedSeats.length === 0 ? (
           <div className="p-6 text-sm text-gray-500">No seats have been allocated yet.</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr>
-                  <th className="px-4 py-3">Seat</th>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Phone</th>
-                  <th className="px-4 py-3">Type</th>
-                  <th className="px-4 py-3">Joining</th>
-                  <th className="px-4 py-3">Paid</th>
-                  <th className="px-4 py-3">Due</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Payment</th>
-                  <th className="px-4 py-3">ID Proof</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {allocatedSeats.map((student) => (
-                  <tr key={student._id || student.seatNo} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-semibold text-gray-700">#{student.seatNo}</td>
-                    <td className="px-4 py-3 text-gray-800">{student.name || "Unknown"}</td>
-                    <td className="px-4 py-3 text-gray-600">{student.phone || "N/A"}</td>
-                    <td className="px-4 py-3 text-gray-600">{student.studentType || "Hosteler"}</td>
-                    <td className="px-4 py-3 text-gray-600">{formatDateDisplay(student.dateOfJoining)}</td>
-                    <td className="px-4 py-3 text-green-600 font-semibold">₹{student.amountPaid || 0}</td>
-                    <td className="px-4 py-3 text-red-500 font-semibold">₹{student.amountDue || 0}</td>
-                    <td className="px-4 py-3">
-                      <span className={student.feeStatus === "Paid" ? "text-green-600 font-semibold" : "text-red-500 font-semibold"}>
-                        {student.feeStatus || "Pending"}
+          <div className="payment-list">
+            {allocatedSeats.map((student) => {
+              const amountPaid = Number(student.amountPaid) || 0;
+              const amountDue = Number(student.amountDue) || 0;
+              const totalAmount = amountPaid + amountDue;
+              const feeStatus = student.feeStatus || (amountDue > 0 ? "Pending" : "Paid");
+              const statusTone = feeStatus === "Paid" ? "paid" : "pending";
+              const paidPercent = totalAmount > 0
+                ? Math.round((amountPaid / totalAmount) * 100)
+                : (feeStatus === "Paid" ? 100 : 0);
+
+              return (
+                <div key={student._id || student.seatNo} className="payment-card">
+                  <div className="payment-card-main">
+                    <span className="payment-seat">Seat #{student.seatNo}</span>
+                    <div className="payment-name">{student.name || "Unknown"}</div>
+                    <div className="payment-meta">
+                      <span>{student.phone || "N/A"}</span>
+                      <span>{student.studentType || "Hosteler"}</span>
+                      <span>Joined {formatDateDisplay(student.dateOfJoining)}</span>
+                    </div>
+                    <div className="payment-chips">
+                      <span className="payment-chip" data-tone={statusTone}>{feeStatus}</span>
+                      <span className="payment-chip" data-tone="info">{student.paymentMode || "Online"}</span>
+                      <span className="payment-chip" data-tone="muted">
+                        {student.identityProof ? "ID Proof" : "No ID Proof"}
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">{student.paymentMode || "Online"}</td>
-                    <td className="px-4 py-3">
-                      {student.identityProof ? (
-                        <a
-                          href={`${API_BASE_URL}/uploads/${student.identityProof}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs font-semibold text-blue-600 hover:underline"
-                        >
-                          View
-                        </a>
-                      ) : (
-                        <span className="text-xs text-gray-400">None</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => openEditModal(student.seatNo, student)}
-                        className="btn-primary text-xs px-3 py-1.5"
+                    </div>
+                  </div>
+                  <div className="payment-card-metrics">
+                    <div className="payment-amount">
+                      <span className="label">Paid</span>
+                      <span className="value is-positive">{formatCurrency(amountPaid)}</span>
+                    </div>
+                    <div className="payment-amount">
+                      <span className="label">Due</span>
+                      <span className="value is-negative">{formatCurrency(amountDue)}</span>
+                    </div>
+                    <div className="payment-amount">
+                      <span className="label">Last Payment</span>
+                      <span className="value">{formatDateDisplay(student.lastPaymentDate)}</span>
+                    </div>
+                    <div className="payment-progress" data-tone={statusTone}>
+                      <span style={{ width: `${paidPercent}%` }} />
+                    </div>
+                    <div className="payment-percent">{paidPercent}% settled</div>
+                  </div>
+                  <div className="payment-card-actions">
+                    {student.identityProof ? (
+                      <a
+                        href={`${API_BASE_URL}/uploads/${student.identityProof}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="payment-link"
                       >
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        View ID Proof
+                      </a>
+                    ) : (
+                      <span className="payment-link muted">No ID Proof</span>
+                    )}
+                    <button
+                      onClick={() => openEditModal(student.seatNo, student)}
+                      className="btn-primary btn-primary-sm"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
