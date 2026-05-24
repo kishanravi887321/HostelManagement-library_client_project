@@ -1,4 +1,4 @@
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
@@ -15,48 +15,65 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="app-shell">
+      <aside className="side-rail">
+        <div className="side-rail-inner">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="brand-badge">H</div>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-white/60">Operations Suite</p>
+                <h1 className="text-xl font-semibold text-white">Hostel ERP</h1>
+              </div>
+            </div>
 
-      {/* Sidebar */}
-      <div className="w-64 bg-gradient-to-b from-purple-600 via-purple-700 to-indigo-950 text-white p-5 shadow-xl flex flex-col justify-between">
-        <div>
-          <h1 className="text-2xl font-bold mb-8 tracking-wide drop-shadow-[0_2px_10px_rgba(168,85,247,0.5)]">
-            Hostel ERP
-          </h1>
+            <nav className="space-y-1">
+              <NavLink
+                to="/"
+                end
+                className={({ isActive }) => `nav-link ${isActive ? "nav-link-active" : ""}`}
+              >
+                <span className="h-2 w-2 rounded-full bg-white/70"></span>
+                Dashboard
+              </NavLink>
+              <NavLink
+                to="/students"
+                className={({ isActive }) => `nav-link ${isActive ? "nav-link-active" : ""}`}
+              >
+                <span className="h-2 w-2 rounded-full bg-white/70"></span>
+                Hostel Students
+              </NavLink>
+              <NavLink
+                to="/library"
+                className={({ isActive }) => `nav-link ${isActive ? "nav-link-active" : ""}`}
+              >
+                <span className="h-2 w-2 rounded-full bg-white/70"></span>
+                Library
+              </NavLink>
+              <NavLink
+                to="/directory"
+                className={({ isActive }) => `nav-link ${isActive ? "nav-link-active" : ""}`}
+              >
+                <span className="h-2 w-2 rounded-full bg-white/70"></span>
+                Student Directory
+              </NavLink>
+            </nav>
+          </div>
 
-          <nav className="space-y-3">
-            <Link to="/" className="block p-2 rounded transition hover:bg-white/10 active:bg-purple-500/20">
-              Dashboard
-            </Link>
-
-            <Link to="/students" className="block p-2 rounded transition hover:bg-white/10 active:bg-purple-500/20">
-              Hostel Students
-            </Link>
-
-            <Link to="/library" className="block p-2 rounded transition hover:bg-white/10 active:bg-purple-500/20">
-              Library
-            </Link>
-
-            {/* 🆕 Replaced Payments with Student Directory */}
-            <Link to="/directory" className="block p-2 rounded transition hover:bg-white/10 active:bg-purple-500/20">
-              Student Directory
-            </Link>
-          </nav>
+          <div className="text-xs text-white/70 space-y-1">
+            <p className="uppercase tracking-[0.2em]">Status</p>
+            <p className="text-sm font-semibold text-white">All systems online</p>
+          </div>
         </div>
-      </div>
+      </aside>
 
-      {/* Main Area */}
-      <div className="flex-1 flex flex-col">
-
-        {/* Navbar */}
-        <div className="bg-white shadow p-4 flex justify-between items-center">
-          <h2 className="font-semibold text-gray-800">Admin Panel</h2>
-          
-          {/* 🆕 Sleek Logout Button inside the top Navbar */}
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-sm bg-red-50 hover:bg-red-100 text-red-600 font-medium py-1.5 px-3.5 rounded-lg border border-red-200 transition-colors shadow-sm"
-          >
+      <div className="page-shell">
+        <div className="top-bar">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.25em] text-amber-700">Admin Panel</p>
+            <p className="text-sm text-slate-600">Manage hostel and library operations in one place.</p>
+          </div>
+          <button onClick={handleLogout} className="btn-ghost flex items-center gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -75,13 +92,10 @@ export default function DashboardLayout() {
           </button>
         </div>
 
-        {/* Page Content */}
         <div className="p-6 overflow-y-auto flex-1">
           <Outlet />
         </div>
-
       </div>
-
     </div>
   );
 }
