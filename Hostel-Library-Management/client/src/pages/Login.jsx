@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
+import { API_BASE_URL } from "../config/api";
 
 export default function Login({ onLoginSuccess }) {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -24,7 +25,7 @@ export default function Login({ onLoginSuccess }) {
     try {
       setLoading(true);
       // Sending request to backend
-      const res = await axios.post("http://localhost:5000/api/auth/login", formData);
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, formData);
       
       if (res.data.token) {
         // Save token to local storage so user stays logged in

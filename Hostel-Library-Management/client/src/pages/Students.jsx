@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "../config/api";
 
 export default function Students() {
   const [students, setStudents] = useState([]);
@@ -44,7 +45,7 @@ export default function Students() {
 
   const fetchStudents = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/students");
+      const res = await axios.get(`${API_BASE_URL}/api/students`);
       setStudents(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.log(err);
@@ -79,7 +80,7 @@ export default function Students() {
         formData.append("identityProof", selectedFile);
       }
 
-      await axios.post("http://localhost:5000/api/students/add", formData, {
+      await axios.post(`${API_BASE_URL}/api/students/add`, formData, {
         headers: {
           "Content-Type": "multipart/form-data"
         }
@@ -114,7 +115,7 @@ export default function Students() {
   const deleteStudent = async (id) => {
     if (window.confirm("Are you sure you want to permanently remove this hostel student record?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/students/${id}`);
+        await axios.delete(`${API_BASE_URL}/api/students/${id}`);
         fetchStudents();
       } catch (err) {
         console.log(err);
@@ -152,7 +153,7 @@ export default function Students() {
         feeStatus: calculatedFeeStatus
       };
 
-      await axios.put(`http://localhost:5000/api/students/${editingStudent._id}`, payload);
+      await axios.put(`${API_BASE_URL}/api/students/${editingStudent._id}`, payload);
       setEditingStudent(null);
       fetchStudents();
     } catch (err) {

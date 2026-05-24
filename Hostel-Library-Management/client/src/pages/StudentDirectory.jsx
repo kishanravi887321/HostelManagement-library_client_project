@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "../config/api";
 
 export default function StudentDirectory() {
   const [hostelStudents, setHostelStudents] = useState([]);
@@ -12,8 +13,8 @@ export default function StudentDirectory() {
     try {
       setLoading(true);
       const [hostelRes, libraryRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/students"),
-        axios.get("http://localhost:5000/api/library")
+        axios.get(`${API_BASE_URL}/api/students`),
+        axios.get(`${API_BASE_URL}/api/library`)
       ]);
       setHostelStudents(Array.isArray(hostelRes.data) ? hostelRes.data : []);
       setLibraryStudents(Array.isArray(libraryRes.data) ? libraryRes.data : []);
@@ -191,7 +192,7 @@ export default function StudentDirectory() {
                     <span className="text-xs font-bold text-gray-400 block uppercase tracking-wider">Identity Document</span>
                     {selectedStudent.identityProof && selectedStudent.identityProof !== "No file uploaded" ? (
                       <a 
-                        href={`http://localhost:5000/uploads/${selectedStudent.identityProof}`} 
+                        href={`${API_BASE_URL}/uploads/${selectedStudent.identityProof}`} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-xs font-semibold text-purple-600 underline bg-purple-50 hover:bg-purple-100 transition px-2 py-1 rounded block mt-1 border border-purple-100 cursor-pointer text-center"

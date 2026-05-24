@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "../config/api";
 
 const SeatGrid = () => {
   const [students, setStudents] = useState([]);
@@ -35,7 +36,7 @@ const SeatGrid = () => {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/library");
+      const res = await axios.get(`${API_BASE_URL}/api/library`);
       setStudents(Array.isArray(res.data) ? res.data : []);
       setError(null);
     } catch (err) {
@@ -140,7 +141,7 @@ const SeatGrid = () => {
         dataPayload.append("identityProof", fileObject);
       }
 
-      await axios.post("http://localhost:5000/api/library/add", dataPayload, {
+      await axios.post(`${API_BASE_URL}/api/library/add`, dataPayload, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       

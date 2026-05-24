@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import SeatGrid from "../components/SeatGrid";
+import { API_BASE_URL } from "../config/api";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -46,7 +47,7 @@ export default function Dashboard() {
     }
 
     // 🔗 Bulletproof URL Generation via URLSearchParams
-    const baseUrl = "http://localhost:5000/api/dashboard/stats";
+    const baseUrl = `${API_BASE_URL}/api/dashboard/stats`;
     const params = new URLSearchParams();
     
     if (targetMonth) {

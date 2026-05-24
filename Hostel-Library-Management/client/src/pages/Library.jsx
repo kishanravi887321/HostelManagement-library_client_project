@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "../config/api";
 
 export default function Library() {
   const [students, setStudents] = useState([]);
@@ -43,7 +44,7 @@ export default function Library() {
 
   const fetchStudents = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/library");
+      const res = await axios.get(`${API_BASE_URL}/api/library`);
       setStudents(res.data);
     } catch (err) {
       console.log(err);
@@ -77,7 +78,7 @@ export default function Library() {
         formData.append("identityProof", fileObject);
       }
 
-      await axios.post("http://localhost:5000/api/library/add", formData, {
+      await axios.post(`${API_BASE_URL}/api/library/add`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
 
@@ -130,7 +131,7 @@ export default function Library() {
         feeStatus: calculatedFeeStatus
       };
 
-      await axios.put(`http://localhost:5000/api/library/${editingStudent._id}`, payload);
+      await axios.put(`${API_BASE_URL}/api/library/${editingStudent._id}`, payload);
       setEditingStudent(null);
       fetchStudents();
     } catch (err) {
@@ -419,7 +420,7 @@ export default function Library() {
                 <td className="p-3">
                   {s.identityProof ? (
                     <a
-                      href={`http://localhost:5000/uploads/${s.identityProof}`}
+                      href={`${API_BASE_URL}/uploads/${s.identityProof}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 font-medium hover:underline text-xs flex items-center gap-1"
@@ -443,7 +444,7 @@ export default function Library() {
                       if (!studentId) return;
                       if (window.confirm("Are you sure you want to permanently delete this student profile?")) {
                         try {
-                          await axios.delete(`http://localhost:5000/api/library/${studentId}`);
+                          await axios.delete(`${API_BASE_URL}/api/library/${studentId}`);
                           alert("Student record removed successfully.");
                           fetchStudents(); 
                         } catch (err) {
