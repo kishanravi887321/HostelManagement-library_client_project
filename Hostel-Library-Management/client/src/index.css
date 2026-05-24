@@ -242,6 +242,11 @@ h6 {
 	box-shadow: var(--shadow);
 }
 
+.table-shell {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
 .table-shell thead {
 	background: #f8f3ea;
 	color: #6b7280;
@@ -288,6 +293,62 @@ h6 {
 .btn-ghost:hover {
 	background: #fff1f2;
 	border-color: #fecdd3;
+}
+
+@media (max-width: 1024px) {
+	.app-shell {
+		flex-direction: column;
+	}
+
+	.side-rail {
+		width: 100%;
+		padding: 1.2rem;
+		border-radius: 0;
+	}
+
+	.side-rail-inner {
+		height: auto;
+		gap: 1.25rem;
+	}
+
+	.side-rail nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.side-rail nav > * {
+		margin-top: 0 !important;
+	}
+
+	.nav-link {
+		padding: 0.45rem 0.7rem;
+		font-size: 0.85rem;
+	}
+
+	.top-bar {
+		margin: 1rem;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.page-content {
+		padding: 1rem;
+	}
+
+	.side-rail .text-xs.text-white\/70 {
+		display: none;
+	}
+}
+
+@media (max-width: 640px) {
+	.top-bar {
+		gap: 0.6rem;
+	}
+
+	.nav-link {
+		width: auto;
+	}
 }
 
 .btn-ghost-sm {

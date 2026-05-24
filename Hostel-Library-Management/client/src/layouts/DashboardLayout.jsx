@@ -92,7 +92,7 @@ export default function DashboardLayout() {
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1">
+        <div className="page-content p-6 overflow-y-auto flex-1">
           <Outlet />
         </div>
       </div>
