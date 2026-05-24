@@ -1,4 +1,4 @@
-const HostelStudent = require("../models/HostelStudent");
+import HostelStudent from "../models/HostelStudent.js";
 
 // Add Hostel Student
 const addHostelStudent = async (req, res) => {
@@ -26,7 +26,7 @@ const getHostelStudents = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   addHostelStudent,
   getHostelStudents,
 };

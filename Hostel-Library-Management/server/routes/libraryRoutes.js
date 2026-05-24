@@ -1,8 +1,9 @@
-const express = require("express");
+import express from "express";
+import Library from "../models/Library.js";
+import multer from "multer"; // 1. 🆕 Import multer
+import path from "path";
+
 const router = express.Router();
-const Library = require("../models/Library");
-const multer = require("multer"); // 1. 🆕 Import multer
-const path = require("path");
 
 // 2. 🆕 Configure how files are saved locally
 const storage = multer.diskStorage({
@@ -109,4 +110,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

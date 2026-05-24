@@ -1,5 +1,5 @@
-const Payment = require("../models/Payment");
-const Library = require("../models/Library"); // 💡 Using Library model to match your reset script
+import Payment from "../models/Payment.js";
+import Library from "../models/Library.js"; // 💡 Using Library model to match your reset script
 
 const collectFee = async (req, res) => {
   try {
@@ -25,6 +25,6 @@ const collectFee = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   collectFee
 };

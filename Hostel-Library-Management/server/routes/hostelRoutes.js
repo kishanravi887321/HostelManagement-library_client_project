@@ -1,14 +1,13 @@
-const express = require("express");
-
-const router = express.Router();
-
-const {
+import express from "express";
+import {
   addHostelStudent,
   getHostelStudents,
-} = require("../controllers/hostelController");
+} from "../controllers/hostelController.js";
+
+const router = express.Router();
 
 router.post("/", addHostelStudent);
 
 router.get("/", getHostelStudents);
 
-module.exports = router;
+export default router;

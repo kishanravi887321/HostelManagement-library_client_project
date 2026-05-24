@@ -1,4 +1,5 @@
-const express = require("express");
+import express from "express";
+
 const router = express.Router();
 
 // Hardcoded secure credentials so we don't mess with your database models
@@ -19,4 +20,4 @@ router.post("/login", (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

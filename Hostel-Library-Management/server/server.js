@@ -1,20 +1,23 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const path = require("path"); // 🆕 Imported path module for managing file paths
-const libraryRoutes = require("./routes/libraryRoutes");
-const connectDB = require("./config/db");
-const studentRoutes = require("./routes/studentRoutes");
-const hostelRoutes = require("./routes/hostelRoutes");
-const dashboardRoutes = require("./routes/dashboardRoutes");
-const authRoutes = require("./routes/authRoutes");
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import path from "path"; // 🆕 Imported path module for managing file paths
+import { fileURLToPath } from "url";
+import libraryRoutes from "./routes/libraryRoutes.js";
+import connectDB from "./config/db.js";
+import studentRoutes from "./routes/studentRoutes.js";
+import hostelRoutes from "./routes/hostelRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import "./utils/monthlyReset.js";
 
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // DB connection (ONLY ONCE)
 connectDB();
-
-require("./utils/monthlyReset");
 
 const app = express();
 

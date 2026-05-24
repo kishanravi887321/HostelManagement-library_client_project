@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -17,4 +17,4 @@ const StudentSchema = new mongoose.Schema({
   identityProof: { type: String } 
 }, { timestamps: true }); // Automatically creates historical 'createdAt' and 'updatedAt' tracking fields
 
-module.exports = mongoose.model("Student", StudentSchema);
+export default mongoose.model("Student", StudentSchema);

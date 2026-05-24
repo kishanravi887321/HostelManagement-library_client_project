@@ -1,5 +1,5 @@
-const Library = require("../models/Library");
-const Payment = require("../models/Payment"); // 💡 Import your new Payment model
+import Library from "../models/Library.js";
+import Payment from "../models/Payment.js"; // 💡 Import your new Payment model
 
 const monthlyBillingCycleReset = async () => {
   try {
@@ -83,4 +83,4 @@ const monthlyBillingCycleReset = async () => {
   }
 };
 
-module.exports = monthlyBillingCycleReset;
+export default monthlyBillingCycleReset;

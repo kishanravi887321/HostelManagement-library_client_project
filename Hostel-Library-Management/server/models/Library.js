@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const LibrarySchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -16,4 +16,4 @@ const LibrarySchema = new mongoose.Schema({
   identityProof: { type: String }
 }, { timestamps: true });
 
-module.exports = mongoose.model("Library", LibrarySchema);
+export default mongoose.model("Library", LibrarySchema);

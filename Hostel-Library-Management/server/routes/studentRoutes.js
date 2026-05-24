@@ -1,8 +1,9 @@
-const express = require("express");
+import express from "express";
+import multer from "multer";
+import path from "path";
+import Student from "../models/Student.js";
+
 const router = express.Router();
-const multer = require("multer");
-const path = require("path");
-const Student = require("../models/Student");
 
 // Configure how and where files are stored
 const storage = multer.diskStorage({
@@ -67,4 +68,4 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
