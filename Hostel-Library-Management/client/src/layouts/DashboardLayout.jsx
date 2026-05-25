@@ -1,5 +1,7 @@
+import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
@@ -41,6 +43,130 @@ export default function DashboardLayout() {
     navigate(path);
   };
 
+  // Admin / greeting state
+  const [adminName, setAdminName] = useState("Admin");
+  const [greetingPrefix, setGreetingPrefix] = useState("Admin Panel");
+  const [greetingLine, setGreetingLine] = useState("Welcome");
+  const [dailyLine, setDailyLine] = useState("");
+  const [greetingEmoji, setGreetingEmoji] = useState("👋");
+  const [dailyEmoji, setDailyEmoji] = useState("✨");
+  const [dailyVisible, setDailyVisible] = useState(false);
+
+  const seededRandom = (seed) => {
+    // simple mulberry32 PRNG
+    let t = seed >>> 0;
+    return function() {
+      t += 0x6D2B79F5;
+      let r = Math.imul(t ^ t >>> 15, 1 | t);
+      r = r + Math.imul(r ^ r >>> 7, 61 | r) ^ r;
+      return ((r ^ r >>> 14) >>> 0) / 4294967296;
+    };
+  };
+
+  const pickDailyLine = (dateStr, name) => {
+    const words1 = [
+      "Keep going",
+      "Shine on",
+      "You matter",
+      "Embrace today",
+      "Make waves",
+      "Stay curious",
+      "Be kind",
+      "Chase joy",
+      "Create smiles",
+      "Spread warmth"
+    ];
+    const words2 = [
+      "— small steps win big.",
+      "— coffee and courage.",
+      "— the world needs you.",
+      "— one page at a time.",
+      "— your effort counts.",
+      "— good vibes only.",
+      "— kindness always wins.",
+      "— bring your best self.",
+      "— today is yours.",
+      "— keep smiling."
+    ];
+
+    // Seed from date and name so it's stable per day+admin
+    let seed = 0;
+    for (let i = 0; i < dateStr.length; i++) seed = (seed * 31 + dateStr.charCodeAt(i)) >>> 0;
+    for (let i = 0; i < (name || "").length; i++) seed = (seed * 131 + name.charCodeAt(i)) >>> 0;
+
+    const rand = seededRandom(seed);
+    const a = Math.floor(rand() * words1.length);
+    const b = Math.floor(rand() * words2.length);
+
+    // Construct a short uplifting line
+    return `${words1[a]} ${words2[b]}`;
+  };
+
+  const seedFromString = (s) => {
+    let seed = 0;
+    for (let i = 0; i < s.length; i++) seed = (seed * 131 + s.charCodeAt(i)) >>> 0;
+    return seededRandom(seed);
+  };
+
+  useEffect(() => {
+    // fetch server-side greeting + daily line (send timezone so server can compute local greeting)
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    (async () => {
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const res = await axios.get(`${API_BASE_URL}/api/utils/greeting`, {
+          params: { tz },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = res.data || {};
+        setAdminName(data.username || "Admin");
+        if (data.greetingLine) setGreetingLine(data.greetingLine);
+        if (data.greetingLine) setGreetingPrefix(data.greetingLine);
+        if (data.dailyLine) setDailyLine(data.dailyLine);
+        if (data.dailyEmoji) setDailyEmoji(data.dailyEmoji);
+        if (data.greetingEmoji) setGreetingEmoji(data.greetingEmoji);
+        // trigger fade-in
+        setTimeout(() => setDailyVisible(true), 60);
+      } catch (err) {
+        // if server fails, keep defaults and fall back to client logic
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    // compute greeting based on local time and adminName
+    const now = new Date();
+    const h = now.getHours();
+    let timeWord = "Hello";
+    if (h >= 5 && h < 12) timeWord = "Good Morning";
+    else if (h >= 12 && h < 17) timeWord = "Good Afternoon";
+    else if (h >= 17 && h < 21) timeWord = "Good Evening";
+    else timeWord = "Hello";
+
+    const shortName = adminName.split(" ")[0] || adminName;
+    const fullGreeting = `${timeWord} ${shortName} !`;
+    setGreetingPrefix(fullGreeting);
+    setGreetingLine(fullGreeting);
+
+    // pick emoji for greeting based on time of day
+    let gEmoji = '👋';
+    if (timeWord.includes('Morning')) gEmoji = '🌞';
+    else if (timeWord.includes('Afternoon')) gEmoji = '☀️';
+    else if (timeWord.includes('Evening')) gEmoji = '🌇';
+    setGreetingEmoji(gEmoji);
+
+    const todayKey = new Date().toISOString().slice(0, 10);
+    setDailyLine(pickDailyLine(todayKey, adminName));
+
+    // deterministic daily emoji accent
+    const emojiChoices = ['✨', '🎯', '😊', '💡', '🌟', '🔥', '🌱'];
+    const picker = seedFromString(`${todayKey}-${adminName}`);
+    setDailyEmoji(emojiChoices[Math.floor(picker() * emojiChoices.length)]);
+  }, [adminName]);
+
   return (
     <div className="app-shell">
       <aside className="side-rail">
@@ -81,6 +207,13 @@ export default function DashboardLayout() {
                   </button>
                   <button
                     type="button"
+                    onClick={() => handleNavigate("/transactions")}
+                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/10"
+                  >
+                    Transactions
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => handleNavigate("/directory")}
                     className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/10"
                   >
@@ -117,10 +250,20 @@ export default function DashboardLayout() {
       </aside>
 
       <div className="page-shell">
-        <div className="top-bar">
+          <div className="top-bar">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.25em] text-amber-700">Admin Panel</p>
-            <p className="text-sm text-slate-600">Manage hostel and library operations in one place.</p>
+            <p className="text-[11px] uppercase tracking-[0.25em] text-amber-700">{greetingPrefix}</p>
+            <p className="text-2xl font-semibold text-slate-900">{greetingEmoji} {greetingLine}</p>
+            <p
+              className="text-sm text-slate-600 mt-1"
+              style={{
+                opacity: dailyVisible ? 1 : 0,
+                transform: dailyVisible ? 'translateY(0px)' : 'translateY(6px)',
+                transition: 'opacity 600ms ease, transform 600ms ease',
+              }}
+            >
+              {dailyEmoji} {dailyLine}
+            </p>
           </div>
         </div>
 

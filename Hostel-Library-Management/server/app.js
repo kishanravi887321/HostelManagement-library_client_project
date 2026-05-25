@@ -1,12 +1,14 @@
-import express from "express";
 import cors from "cors";
+import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import authRoutes from "./routes/authRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import hostelRoutes from "./routes/hostelRoutes.js";
 import libraryRoutes from "./routes/libraryRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
-import hostelRoutes from "./routes/hostelRoutes.js";
-import dashboardRoutes from "./routes/dashboardRoutes.js";
-import authRoutes from "./routes/authRoutes.js";
+import transactionRoutes from "./routes/transactionRoutes.js";
+import utilsRoutes from "./routes/utilsRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,6 +48,8 @@ app.use("/api/hostel", hostelRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/utils", utilsRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hostel Library API Running");

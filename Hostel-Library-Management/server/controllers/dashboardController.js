@@ -1,6 +1,9 @@
-import Student from "../models/Student.js";
 import Library from "../models/Library.js";
 import Payment from "../models/Payment.js";
+import Student from "../models/Student.js";
+import { monthlyBillingCycleReset } from "../utils/monthlyReset.js";
+
+const ADMIN_TOKEN = "secure_hostel_library_management_token_2026";
 
 const getDashboardStats = async (req, res) => {
   try {
@@ -62,8 +65,36 @@ const getDashboardStats = async (req, res) => {
           $group: {
             _id: null,
             paid: { $sum: "$amountPaid" },
-            cash: { $sum: { $cond: [{ $eq: [{ $toLower: "$paymentMode" }, "cash"] }, "$amountPaid", 0] } },
-            online: { $sum: { $cond: [{ $eq: [{ $toLower: "$paymentMode" }, "online"] }, "$amountPaid", 0] } }
+            cash: {
+              $sum: {
+                $cond: [
+                  { $eq: [{ $toLower: "$paymentMode" }, "cash"] },
+                  "$amountPaid",
+                  {
+                    $cond: [
+                      { $eq: [{ $toLower: "$paymentMode" }, "split"] },
+                      { $ifNull: ["$amountPaidCash", 0] },
+                      0
+                    ]
+                  }
+                ]
+              }
+            },
+            online: {
+              $sum: {
+                $cond: [
+                  { $eq: [{ $toLower: "$paymentMode" }, "online"] },
+                  "$amountPaid",
+                  {
+                    $cond: [
+                      { $eq: [{ $toLower: "$paymentMode" }, "split"] },
+                      { $ifNull: ["$amountPaidOnline", 0] },
+                      0
+                    ]
+                  }
+                ]
+              }
+            }
           }
         }
       ]);
@@ -73,13 +104,19 @@ const getDashboardStats = async (req, res) => {
         {
           $group: {
             _id: null,
-            paid: { $sum: { $add: ["$amountPaid", { $ifNull: ["$advanceBalance", 0] }] } },
+            paid: { $sum: { $add: ["$amountPaid", { $ifNull: ["$advanceAmount", 0] }] } },
             cash: {
               $sum: {
                 $cond: [
                   { $eq: [{ $toLower: "$paymentMode" }, "cash"] },
-                  { $add: ["$amountPaid", { $ifNull: ["$advanceBalance", 0] }] },
-                  0
+                  { $add: ["$amountPaid", { $ifNull: ["$advanceAmount", 0] }] },
+                  {
+                    $cond: [
+                      { $eq: [{ $toLower: "$paymentMode" }, "split"] },
+                      { $ifNull: ["$amountPaidCash", 0] },
+                      0
+                    ]
+                  }
                 ]
               }
             },
@@ -87,8 +124,14 @@ const getDashboardStats = async (req, res) => {
               $sum: {
                 $cond: [
                   { $eq: [{ $toLower: "$paymentMode" }, "online"] },
-                  { $add: ["$amountPaid", { $ifNull: ["$advanceBalance", 0] }] },
-                  0
+                  { $add: ["$amountPaid", { $ifNull: ["$advanceAmount", 0] }] },
+                  {
+                    $cond: [
+                      { $eq: [{ $toLower: "$paymentMode" }, "split"] },
+                      { $ifNull: ["$amountPaidOnline", 0] },
+                      0
+                    ]
+                  }
                 ]
               }
             }
@@ -133,6 +176,27 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
-export {
-  getDashboardStats,
+const runMonthlyResetNow = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || "";
+    if (authHeader !== `Bearer ${ADMIN_TOKEN}`) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const result = await monthlyBillingCycleReset();
+    return res.json({
+      message: "Monthly reset executed successfully",
+      ...result,
+      executedAt: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error("❌ Manual monthly reset failed:", err);
+    return res.status(500).json({ message: err.message || "Monthly reset failed" });
+  }
 };
+
+export {
+    getDashboardStats,
+    runMonthlyResetNow
+};
+

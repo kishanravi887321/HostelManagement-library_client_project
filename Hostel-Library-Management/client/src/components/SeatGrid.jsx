@@ -21,7 +21,13 @@ const SeatGrid = () => {
     seatNo: "",
     feeStatus: "Pending",
     amountPaid: "",
+    amountPaidOnline: "",
+    amountPaidCash: "",
     amountDue: "",
+    paymentReceivedNow: "",
+    paymentReceivedOnlineNow: "",
+    paymentReceivedCashNow: "",
+    paymentReceivedMode: "Online",
     lastPaymentDate: "",
     dateOfJoining: "",
     paymentMode: "Online" 
@@ -32,6 +38,35 @@ const SeatGrid = () => {
   const [formSubmitting, setFormSubmitting] = useState(false);
 
   const isEditing = Boolean(editingStudent);
+  const isSplitPayment = formData.paymentMode === "Split";
+
+  const getPaymentBreakdown = (student) => {
+    const mode = String(student.paymentMode || "Online").toLowerCase();
+
+    if (mode === "split") {
+      const online = Number(student.amountPaidOnline) || 0;
+      const cash = Number(student.amountPaidCash) || 0;
+      return {
+        online,
+        cash,
+        total: online + cash,
+      };
+    }
+
+    if (mode === "cash") {
+      return {
+        online: 0,
+        cash: Number(student.amountPaid) || 0,
+        total: Number(student.amountPaid) || 0,
+      };
+    }
+
+    return {
+      online: Number(student.amountPaid) || 0,
+      cash: 0,
+      total: Number(student.amountPaid) || 0,
+    };
+  };
 
   const formatDateForInput = (value) => {
     if (!value) return "";
@@ -92,10 +127,19 @@ const SeatGrid = () => {
       seatNo: String(seatNo),
       feeStatus: "Pending",
       amountPaid: "",
+      amountPaidOnline: "",
+      amountPaidCash: "",
       amountDue: "",
+      paymentReceivedNow: "",
+      paymentReceivedOnlineNow: "",
+      paymentReceivedCashNow: "",
+      paymentReceivedMode: "Online",
       lastPaymentDate: "",
       dateOfJoining: "",
-      paymentMode: "Online"
+      paymentMode: "Online",
+      advanceAmount: "",
+      advanceTopUp: "",
+      useAdvance: false
     });
 
     setIsModalOpen(true);
@@ -113,10 +157,19 @@ const SeatGrid = () => {
       seatNo: String(seatNo),
       feeStatus: student.feeStatus || "Pending",
       amountPaid: student.amountPaid ?? "",
+      amountPaidOnline: student.amountPaidOnline ?? "",
+      amountPaidCash: student.amountPaidCash ?? "",
       amountDue: student.amountDue ?? "",
+      paymentReceivedNow: "",
+      paymentReceivedOnlineNow: "",
+      paymentReceivedCashNow: "",
+      paymentReceivedMode: student.paymentMode || "Online",
       lastPaymentDate: formatDateForInput(student.lastPaymentDate),
       dateOfJoining: formatDateForInput(student.dateOfJoining),
-      paymentMode: student.paymentMode || "Online"
+      paymentMode: student.paymentMode || "Online",
+      advanceAmount: student.advanceAmount ?? "",
+      advanceTopUp: "",
+      useAdvance: false
     });
 
     setIsModalOpen(true);
@@ -140,17 +193,40 @@ const SeatGrid = () => {
     e.preventDefault();
     setFormSubmitting(true);
     try {
-      const parsedAmountPaid = Number(formData.amountPaid) || 0;
+      const parsedAmountPaidOnline = Number(formData.amountPaidOnline) || 0;
+      const parsedAmountPaidCash = Number(formData.amountPaidCash) || 0;
+      const parsedAmountPaid = isSplitPayment
+        ? parsedAmountPaidOnline + parsedAmountPaidCash
+        : Number(formData.amountPaid) || 0;
       const parsedAmountDue = Number(formData.amountDue) || 0;
-      const calculatedFeeStatus = parsedAmountDue > 0 ? "Pending" : "Paid";
+      const receivedOnlineNow = formData.paymentReceivedMode === "Split"
+        ? (Number(formData.paymentReceivedOnlineNow) || 0)
+        : (formData.paymentReceivedMode === "Online" ? (Number(formData.paymentReceivedNow) || 0) : 0);
+      const receivedCashNow = formData.paymentReceivedMode === "Split"
+        ? (Number(formData.paymentReceivedCashNow) || 0)
+        : (formData.paymentReceivedMode === "Cash" ? (Number(formData.paymentReceivedNow) || 0) : 0);
+      const receivedNow = receivedOnlineNow + receivedCashNow;
+      const nextOnline = Number(formData.amountPaidOnline) || 0;
+      const nextCash = Number(formData.amountPaidCash) || 0;
+      const nextTotalPaid = Number(formData.amountPaid) || 0;
+      const nextAmountDue = Math.max(parsedAmountDue - receivedNow, 0);
+      const calculatedFeeStatus = nextAmountDue > 0 ? "Pending" : "Paid";
+      const nextPaymentMode = nextOnline > 0 && nextCash > 0
+        ? "Split"
+        : nextCash > 0
+          ? "Cash"
+          : "Online";
 
       if (isEditing && editingStudent?._id) {
         const payload = {
           ...formData,
           seatNo: String(selectedSeat),
-          amountPaid: parsedAmountPaid,
-          amountDue: parsedAmountDue,
-          feeStatus: calculatedFeeStatus
+          amountPaid: nextTotalPaid,
+          amountPaidOnline: nextOnline,
+          amountPaidCash: nextCash,
+          amountDue: nextAmountDue,
+          feeStatus: calculatedFeeStatus,
+          paymentMode: nextPaymentMode
         };
 
         await axios.put(`${API_BASE_URL}/api/library/${editingStudent._id}`, payload);
@@ -166,19 +242,26 @@ const SeatGrid = () => {
       dataPayload.append("studentType", formData.studentType);
       dataPayload.append("seatNo", String(selectedSeat));
       dataPayload.append("amountPaid", parsedAmountPaid);
+      dataPayload.append("amountPaidOnline", isSplitPayment ? parsedAmountPaidOnline : 0);
+      dataPayload.append("amountPaidCash", isSplitPayment ? parsedAmountPaidCash : 0);
       dataPayload.append("amountDue", parsedAmountDue);
       dataPayload.append("feeStatus", calculatedFeeStatus);
       dataPayload.append("lastPaymentDate", formData.lastPaymentDate);
       dataPayload.append("dateOfJoining", formData.dateOfJoining);
       dataPayload.append("paymentMode", formData.paymentMode);
+      dataPayload.append("paymentReceivedNow", formData.paymentReceivedNow || "");
+      dataPayload.append("paymentReceivedOnlineNow", formData.paymentReceivedOnlineNow || "");
+      dataPayload.append("paymentReceivedCashNow", formData.paymentReceivedCashNow || "");
+      dataPayload.append("paymentReceivedMode", formData.paymentReceivedMode);
+      dataPayload.append("advanceAmount", Number(formData.advanceAmount) || 0);
+      dataPayload.append("advanceTopUp", Number(formData.advanceTopUp) || 0);
+      dataPayload.append("useAdvance", formData.useAdvance ? true : false);
 
       if (fileObject) {
         dataPayload.append("identityProof", fileObject);
       }
 
-      await axios.post(`${API_BASE_URL}/api/library/add`, dataPayload, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
+      await axios.post(`${API_BASE_URL}/api/library/add`, dataPayload);
       
       closeModal();
       await fetchStudents();
@@ -217,6 +300,7 @@ const SeatGrid = () => {
         <div>
           <h2 className="text-xl font-bold text-gray-800">Library Seat Matrix</h2>
           <p className="text-sm text-gray-500 mt-1">Live overview of library desk occupancy</p>
+                  {/* Advance top-up removed from seat matrix view */}
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -291,7 +375,7 @@ const SeatGrid = () => {
       {/* --- ALLOCATION MODAL POPUP --- */}
       {isModalOpen && (
         <div className="modal-backdrop">
-          <div className="modal-card">
+          <div className="modal-card max-h-[90vh] overflow-y-auto">
             <div className="modal-head">
               <div className="modal-title">
                 <span className="modal-icon" aria-hidden="true">
@@ -400,18 +484,62 @@ const SeatGrid = () => {
 
               <div className="field-grid">
                 <div className="field">
-                  <label className="field-label">Amount Paid (₹) *</label>
+                  <label className="field-label">{isSplitPayment ? "Amount Paid Online (₹) *" : "Amount Paid (₹) *"}</label>
                   <div className="field-input">
                     <span className="field-icon" aria-hidden="true">₹</span>
-                    <input
-                      type="number"
-                      name="amountPaid"
-                      value={formData.amountPaid}
-                      onChange={handleInputChange}
-                      placeholder="Amount"
-                    />
+                    {isSplitPayment ? (
+                      <input
+                        type="number"
+                        name="amountPaidOnline"
+                        value={formData.amountPaidOnline}
+                        onChange={handleInputChange}
+                        placeholder="Online amount"
+                      />
+                    ) : (
+                      <input
+                        type="number"
+                        name="amountPaid"
+                        value={formData.amountPaid}
+                        onChange={handleInputChange}
+                        placeholder="Amount"
+                      />
+                    )}
                   </div>
                 </div>
+                <div className="field">
+                  <label className="field-label">{isSplitPayment ? "Amount Paid Cash (₹) *" : "Amount Due (₹) *"}</label>
+                  <div className="field-input">
+                    <span className="field-icon" aria-hidden="true">₹</span>
+                    {isSplitPayment ? (
+                      <input
+                        type="number"
+                        name="amountPaidCash"
+                        value={formData.amountPaidCash}
+                        onChange={handleInputChange}
+                        placeholder="Cash amount"
+                      />
+                    ) : (
+                      <input
+                        type="number"
+                        name="amountDue"
+                        value={formData.amountDue}
+                        placeholder="Amount"
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const numericDue = Number(value) || 0;
+                          setFormData(prev => ({
+                            ...prev,
+                            amountDue: value,
+                            feeStatus: numericDue > 0 ? "Pending" : "Paid"
+                          }));
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {isSplitPayment && (
                 <div className="field">
                   <label className="field-label">Amount Due (₹) *</label>
                   <div className="field-input">
@@ -420,20 +548,20 @@ const SeatGrid = () => {
                       type="number"
                       name="amountDue"
                       value={formData.amountDue}
-                      placeholder="Amount"
                       onChange={(e) => {
                         const value = e.target.value;
                         const numericDue = Number(value) || 0;
-                        setFormData(prev => ({
+                        setFormData((prev) => ({
                           ...prev,
                           amountDue: value,
-                          feeStatus: numericDue > 0 ? "Pending" : "Paid"
+                          feeStatus: numericDue > 0 ? "Pending" : "Paid",
                         }));
                       }}
+                      placeholder="Amount due"
                     />
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="field-grid">
                 <div className="field">
@@ -445,9 +573,23 @@ const SeatGrid = () => {
                         <path d="M3 10h18" />
                       </svg>
                     </span>
-                    <select name="paymentMode" value={formData.paymentMode} onChange={handleInputChange}>
+                    <select
+                      name="paymentMode"
+                      value={formData.paymentMode}
+                      onChange={(e) => {
+                        const nextMode = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          paymentMode: nextMode,
+                          amountPaid: nextMode === "Split" ? "" : prev.amountPaid,
+                          amountPaidOnline: nextMode === "Split" ? prev.amountPaidOnline : "",
+                          amountPaidCash: nextMode === "Split" ? prev.amountPaidCash : "",
+                        }));
+                      }}
+                    >
                       <option value="Online">Online Payment</option>
                       <option value="Cash">Cash Payment</option>
+                      <option value="Split">Split Payment</option>
                     </select>
                   </div>
                 </div>
@@ -469,6 +611,61 @@ const SeatGrid = () => {
                   </div>
                 </div>
               </div>
+
+              {isEditing && (
+                <div className="field-grid">
+                  <div className="field">
+                    <label className="field-label">Payment Received Now (₹)</label>
+                    {formData.paymentReceivedMode === "Split" ? (
+                      <div className="space-y-2">
+                        <input
+                          type="number"
+                          name="paymentReceivedOnlineNow"
+                          value={formData.paymentReceivedOnlineNow}
+                          onChange={handleInputChange}
+                          placeholder="Online amount"
+                        />
+                        <input
+                          type="number"
+                          name="paymentReceivedCashNow"
+                          value={formData.paymentReceivedCashNow}
+                          onChange={handleInputChange}
+                          placeholder="Cash amount"
+                        />
+                      </div>
+                    ) : (
+                      <input
+                        type="number"
+                        name="paymentReceivedNow"
+                        value={formData.paymentReceivedNow}
+                        onChange={handleInputChange}
+                        placeholder="0"
+                      />
+                    )}
+                  </div>
+                  <div className="field">
+                    <label className="field-label">Current Payment Mode</label>
+                    <select
+                      name="paymentReceivedMode"
+                      value={formData.paymentReceivedMode}
+                      onChange={(e) => {
+                        const nextMode = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          paymentReceivedMode: nextMode,
+                          paymentReceivedNow: nextMode === "Split" ? "" : prev.paymentReceivedNow,
+                          paymentReceivedOnlineNow: nextMode === "Split" ? prev.paymentReceivedOnlineNow : "",
+                          paymentReceivedCashNow: nextMode === "Split" ? prev.paymentReceivedCashNow : ""
+                        }));
+                      }}
+                    >
+                      <option value="Online">Online</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Split">Split</option>
+                    </select>
+                  </div>
+                </div>
+              )}
 
               <div className="field">
                 <label className="field-label">Identity Proof (PDF Document)</label>
@@ -496,6 +693,24 @@ const SeatGrid = () => {
                   </label>
                 )}
               </div>
+
+              {isEditing && (Number(formData.paymentReceivedNow) > 0 || Number(formData.paymentReceivedOnlineNow) > 0 || Number(formData.paymentReceivedCashNow) > 0) && (
+                <div className="status-banner" data-tone="blue">
+                  <span className="status-title">Payment Update</span>
+                  <span className="status-value">
+                    The new payment will be added to the student's total and deducted from the current due.
+                  </span>
+                </div>
+              )}
+
+              {formData.paymentMode === "Split" && (
+                <div className="status-banner" data-tone="paid">
+                  <span className="status-title">Split Payment Summary</span>
+                  <span className="status-value">
+                    {formatCurrency(getPaymentBreakdown(formData).online)} online · {formatCurrency(getPaymentBreakdown(formData).cash)} cash · {formatCurrency(getPaymentBreakdown(formData).total)} total
+                  </span>
+                </div>
+              )}
 
               <div className="status-banner" data-tone={formData.feeStatus === "Paid" ? "paid" : "pending"}>
                 <span className="status-title">Auto-Assigned Status</span>

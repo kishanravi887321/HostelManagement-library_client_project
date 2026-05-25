@@ -9,6 +9,7 @@ export default function Security() {
   const [formData, setFormData] = useState({ username: "", oldPassword: "", password: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [runningReset, setRunningReset] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -70,6 +71,32 @@ export default function Security() {
       setError(requestError.response?.data?.message || "Unable to update credentials.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRunMonthlyReset = async () => {
+    setError("");
+    setSuccess("");
+
+    const confirmed = window.confirm(
+      "Run monthly reset now? This will recompute due amounts and auto-apply wallet advance for all students."
+    );
+    if (!confirmed) return;
+
+    try {
+      setRunningReset(true);
+      const response = await axios.post(
+        `${API_BASE_URL}/api/dashboard/run-monthly-reset`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const { hostelUpdated = 0, libraryUpdated = 0 } = response.data || {};
+      setSuccess(`Monthly reset executed. Hostel updated: ${hostelUpdated}, Library updated: ${libraryUpdated}.`);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "Unable to run monthly reset.");
+    } finally {
+      setRunningReset(false);
     }
   };
 
@@ -153,6 +180,19 @@ export default function Security() {
           </button>
         </div>
       </form>
+
+      <div className="border-t border-[var(--border)] pt-5 space-y-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Billing Admin</p>
+        <p className="text-sm text-slate-500">Use this to manually run monthly fee reset without waiting for the 1st-day scheduler.</p>
+        <button
+          type="button"
+          onClick={handleRunMonthlyReset}
+          disabled={runningReset || loading}
+          className={`px-5 py-2.5 rounded-lg text-sm font-semibold text-white ${runningReset || loading ? "bg-slate-400 cursor-not-allowed" : "bg-amber-700 hover:bg-amber-800"}`}
+        >
+          {runningReset ? "Running Monthly Reset..." : "Run Monthly Reset Now"}
+        </button>
+      </div>
     </div>
   );
 }

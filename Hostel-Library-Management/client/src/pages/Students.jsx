@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import AdvanceModal from "../components/AdvanceModal";
 import { API_BASE_URL } from "../config/api";
 
 export default function Students() {
@@ -20,14 +21,18 @@ export default function Students() {
     feeStatus: "Pending",
     sharingType: "Single",
     amountPaid: "",
+    amountPaidOnline: "",
+    amountPaidCash: "",
     amountDue: "",
     paymentMode: "Online",
     isAdvancePayment: false,
+    advanceAmount: "",
     dateOfJoining: "",
     lastPaymentDate: ""
   });
 
   const [editingStudent, setEditingStudent] = useState(null);
+  const [advanceOpenFor, setAdvanceOpenFor] = useState(null);
   const [editForm, setEditForm] = useState({
     name: "",
     phone: "",
@@ -35,13 +40,79 @@ export default function Students() {
     feeStatus: "Pending",
     sharingType: "Single",
     amountPaid: "",
+    amountPaidOnline: "",
+    amountPaidCash: "",
     amountDue: "",
+    paymentReceivedNow: "",
+    paymentReceivedOnlineNow: "",
+    paymentReceivedCashNow: "",
+    paymentReceivedMode: "Online",
     paymentMode: "Online",
     isAdvancePayment: false,
+    advanceTopUp: "",
+    useAdvance: false,
+    advanceAmount: "",
     dateOfJoining: "",
     lastPaymentDate: "",
     identityProof: ""
   });
+
+  const editPaymentSummary = (student) => {
+    const mode = String(student.paymentMode || "Online").toLowerCase();
+
+    if (mode === "split") {
+      return {
+        online: Number(student.amountPaidOnline) || 0,
+        cash: Number(student.amountPaidCash) || 0,
+        total: Number(student.amountPaid) || 0,
+      };
+    }
+
+    if (mode === "cash") {
+      return {
+        online: 0,
+        cash: Number(student.amountPaid) || 0,
+        total: Number(student.amountPaid) || 0,
+      };
+    }
+
+    return {
+      online: Number(student.amountPaid) || 0,
+      cash: 0,
+      total: Number(student.amountPaid) || 0,
+    };
+  };
+
+  const isSplitPayment = form.paymentMode === "Split";
+  const amountPaidTotal = isSplitPayment
+    ? (Number(form.amountPaidOnline) || 0) + (Number(form.amountPaidCash) || 0)
+    : (Number(form.amountPaid) || 0);
+
+  const paymentSummary = (student) => {
+    const mode = String(student.paymentMode || "Online").toLowerCase();
+
+    if (mode === "split") {
+      return {
+        online: Number(student.amountPaidOnline) || 0,
+        cash: Number(student.amountPaidCash) || 0,
+        total: Number(student.amountPaid) || 0,
+      };
+    }
+
+    if (mode === "cash") {
+      return {
+        online: 0,
+        cash: Number(student.amountPaid) || 0,
+        total: Number(student.amountPaid) || 0,
+      };
+    }
+
+    return {
+      online: Number(student.amountPaid) || 0,
+      cash: 0,
+      total: Number(student.amountPaid) || 0,
+    };
+  };
 
   const fetchStudents = async () => {
     try {
@@ -59,6 +130,18 @@ export default function Students() {
   // 🛠️ Updated to completely leverage Multipart FormData Streams
   const addStudent = async () => {
     try {
+      const hasNegative = [
+        form.amountPaid,
+        form.amountPaidOnline,
+        form.amountPaidCash,
+        form.amountDue,
+        form.advanceAmount
+      ].some((v) => v !== "" && Number(v) < 0);
+      if (hasNegative) {
+        alert("Negative values are not allowed in payment fields.");
+        return;
+      }
+
       const parsedAmountDue = Number(form.amountDue) || 0;
       const calculatedFeeStatus = parsedAmountDue > 0 ? "Pending" : "Paid";
 
@@ -67,10 +150,16 @@ export default function Students() {
       formData.append("phone", form.phone);
       formData.append("roomNo", form.roomNo);
       formData.append("sharingType", form.sharingType);
-      formData.append("amountPaid", Number(form.amountPaid) || 0);
+      formData.append("amountPaid", amountPaidTotal);
+      formData.append("amountPaidOnline", isSplitPayment ? Number(form.amountPaidOnline) || 0 : 0);
+      formData.append("amountPaidCash", isSplitPayment ? Number(form.amountPaidCash) || 0 : 0);
       formData.append("amountDue", parsedAmountDue);
       formData.append("feeStatus", calculatedFeeStatus);
       formData.append("paymentMode", form.paymentMode);
+      formData.append("advanceAmount", Number(form.advanceAmount) || 0);
+      formData.append("paymentReceivedNow", Number(form.amountPaid) || 0);
+      formData.append("paymentReceivedOnlineNow", isSplitPayment ? Number(form.amountPaidOnline) || 0 : (form.paymentMode === "Online" ? Number(form.amountPaid) || 0 : 0));
+      formData.append("paymentReceivedCashNow", isSplitPayment ? Number(form.amountPaidCash) || 0 : (form.paymentMode === "Cash" ? Number(form.amountPaid) || 0 : 0));
       formData.append("isAdvancePayment", form.isAdvancePayment);
       formData.append("dateOfJoining", form.dateOfJoining);
       formData.append("lastPaymentDate", form.lastPaymentDate);
@@ -90,9 +179,12 @@ export default function Students() {
         feeStatus: "Pending",
         sharingType: "Single",
         amountPaid: "",
+        amountPaidOnline: "",
+        amountPaidCash: "",
         amountDue: "",
         paymentMode: "Online",
         isAdvancePayment: false,
+        advanceAmount: "",
         dateOfJoining: "",
         lastPaymentDate: ""
       });
@@ -128,7 +220,13 @@ export default function Students() {
       feeStatus: student.feeStatus || "Pending",
       sharingType: student.sharingType || "Single",
       amountPaid: student.amountPaid !== undefined ? student.amountPaid : "",
+      amountPaidOnline: student.amountPaidOnline !== undefined ? student.amountPaidOnline : "",
+      amountPaidCash: student.amountPaidCash !== undefined ? student.amountPaidCash : "",
       amountDue: student.amountDue !== undefined ? student.amountDue : "",
+      paymentReceivedNow: "",
+      paymentReceivedOnlineNow: "",
+      paymentReceivedCashNow: "",
+      paymentReceivedMode: student.paymentMode || "Online",
       paymentMode: student.paymentMode || "Online",
       isAdvancePayment: student.isAdvancePayment || false,
       dateOfJoining: student.dateOfJoining || "",
@@ -139,14 +237,53 @@ export default function Students() {
 
   const updateStudent = async () => {
     try {
+      const hasNegative = [
+        editForm.amountPaid,
+        editForm.amountPaidOnline,
+        editForm.amountPaidCash,
+        editForm.amountDue,
+        editForm.paymentReceivedNow,
+        editForm.paymentReceivedOnlineNow,
+        editForm.paymentReceivedCashNow,
+        editForm.advanceTopUp
+      ].some((v) => v !== "" && Number(v) < 0);
+      if (hasNegative) {
+        alert("Negative values are not allowed in payment fields.");
+        return;
+      }
+
       const parsedAmountDue = Number(editForm.amountDue) || 0;
-      const calculatedFeeStatus = parsedAmountDue > 0 ? "Pending" : "Paid";
+      const previousOnline = Number(editForm.amountPaidOnline) || 0;
+      const previousCash = Number(editForm.amountPaidCash) || 0;
+
+      const receivedOnlineNow = editForm.paymentReceivedMode === "Split"
+        ? (Number(editForm.paymentReceivedOnlineNow) || 0)
+        : (editForm.paymentReceivedMode === "Online" ? (Number(editForm.paymentReceivedNow) || 0) : 0);
+
+      const receivedCashNow = editForm.paymentReceivedMode === "Split"
+        ? (Number(editForm.paymentReceivedCashNow) || 0)
+        : (editForm.paymentReceivedMode === "Cash" ? (Number(editForm.paymentReceivedNow) || 0) : 0);
+
+      const receivedNow = receivedOnlineNow + receivedCashNow;
+      const nextOnline = previousOnline + receivedOnlineNow;
+      const nextCash = previousCash + receivedCashNow;
+      const nextTotalPaid = nextOnline + nextCash;
+      const nextAmountDue = Math.max(parsedAmountDue - receivedNow, 0);
+      const calculatedFeeStatus = nextAmountDue > 0 ? "Pending" : "Paid";
+      const nextPaymentMode = nextOnline > 0 && nextCash > 0
+        ? "Split"
+        : nextCash > 0
+          ? "Cash"
+          : "Online";
 
       const payload = {
         ...editForm,
-        amountPaid: Number(editForm.amountPaid) || 0,
-        amountDue: parsedAmountDue,
-        feeStatus: calculatedFeeStatus
+        amountPaid: nextTotalPaid,
+        amountPaidOnline: nextOnline,
+        amountPaidCash: nextCash,
+        amountDue: nextAmountDue,
+        feeStatus: calculatedFeeStatus,
+        paymentMode: nextPaymentMode
       };
 
       await axios.put(`${API_BASE_URL}/api/students/${editingStudent._id}`, payload);
@@ -204,19 +341,17 @@ export default function Students() {
   }, 0);
 
   const onlinePaidAmount = students.reduce((sum, s) => {
+    const payment = paymentSummary(s);
     if (filterType === "all" || matchDate(s.lastPaymentDate, targetYear, targetMonthIndex)) {
-      if (String(s.paymentMode || "").toLowerCase() === "online") {
-        return sum + (Number(s.amountPaid) || 0);
-      }
+      return sum + payment.online;
     }
     return sum;
   }, 0);
 
   const cashPaidAmount = students.reduce((sum, s) => {
+    const payment = paymentSummary(s);
     if (filterType === "all" || matchDate(s.lastPaymentDate, targetYear, targetMonthIndex)) {
-      if (String(s.paymentMode || "").toLowerCase() === "cash") {
-        return sum + (Number(s.amountPaid) || 0);
-      }
+      return sum + payment.cash;
     }
     return sum;
   }, 0);
@@ -279,15 +414,38 @@ export default function Students() {
           <option value="Double Sharing">Double Sharing</option>
         </select>
 
+        {isSplitPayment ? (
+          <>
+            <input
+              type="number"
+              min="0"
+              className="border p-2 rounded text-sm"
+              placeholder="Amount Paid Online (₹)"
+              value={form.amountPaidOnline}
+              onChange={(e) => setForm({ ...form, amountPaidOnline: e.target.value })}
+            />
+            <input
+              type="number"
+              min="0"
+              className="border p-2 rounded text-sm"
+              placeholder="Amount Paid Cash (₹)"
+              value={form.amountPaidCash}
+              onChange={(e) => setForm({ ...form, amountPaidCash: e.target.value })}
+            />
+          </>
+        ) : (
+          <input
+            type="number"
+            min="0"
+            className="border p-2 rounded text-sm"
+            placeholder="Amount Paid (₹)"
+            value={form.amountPaid}
+            onChange={(e) => setForm({ ...form, amountPaid: e.target.value })}
+          />
+        )}
         <input
           type="number"
-          className="border p-2 rounded text-sm"
-          placeholder="Amount Paid (₹)"
-          value={form.amountPaid}
-          onChange={(e) => setForm({ ...form, amountPaid: e.target.value })}
-        />
-        <input
-          type="number"
+          min="0"
           className="border p-2 rounded text-sm"
           placeholder="Amount Due (₹)"
           value={form.amountDue}
@@ -305,10 +463,17 @@ export default function Students() {
         <select
           className="border p-2 rounded text-sm bg-white"
           value={form.paymentMode}
-          onChange={(e) => setForm({ ...form, paymentMode: e.target.value })}
+          onChange={(e) => setForm({
+            ...form,
+            paymentMode: e.target.value,
+            amountPaid: e.target.value === "Split" ? "" : form.amountPaid,
+            amountPaidOnline: e.target.value === "Split" ? form.amountPaidOnline : "",
+            amountPaidCash: e.target.value === "Split" ? form.amountPaidCash : "",
+          })}
         >
           <option value="Online">Online Transaction</option>
           <option value="Cash">Cash Handover</option>
+          <option value="Split">Split Payment</option>
         </select>
 
         <div className="flex items-center space-x-2 border p-2 rounded bg-gray-50/50">
@@ -323,6 +488,16 @@ export default function Students() {
             Is Advance Payment?
           </label>
         </div>
+
+        <input
+          type="number"
+          min="0"
+          className="border p-2 rounded text-sm"
+          placeholder="Advance Top-up (₹)"
+          value={form.advanceAmount}
+          onChange={(e) => setForm({ ...form, advanceAmount: e.target.value })}
+        />
+        <div className="text-xs text-gray-500 col-span-full mt-1">Advance will be saved to student's wallet and visible in the Advance modal.</div>
 
         <div className="flex flex-col">
           <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 mb-0.5">Date of Joining</label>
@@ -423,6 +598,7 @@ Calculated Fee Status: <span className={form.feeStatus === "Paid" ? "text-green-
               <th className="p-3">Room / Config</th>
               <th className="p-3">Paid</th>
               <th className="p-3">Due</th>
+              <th className="p-3">Advance (₹)</th>
               <th className="p-3">Method</th>
               <th className="p-3">Type</th>
               <th className="p-3">Status</th>
@@ -438,10 +614,11 @@ Calculated Fee Status: <span className={form.feeStatus === "Paid" ? "text-green-
                   <div className="font-semibold text-gray-700">Room #{s.roomNo}</div>
                   <div className="text-[11px] text-gray-400 font-medium">{s.sharingType || "Single"}</div>
                 </td>
-                <td className="p-3 text-green-600 font-medium">₹{s.amountPaid || 0}</td>
+                <td className="p-3 text-green-600 font-medium">₹{paymentSummary(s).total}</td>
                 <td className="p-3 text-red-500 font-medium">₹{s.amountDue || 0}</td>
+                <td className="p-3 text-blue-700 font-semibold">₹{s.advanceAmount || 0}</td>
                 <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${s.paymentMode === 'Cash' ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'bg-blue-50 text-blue-700 border border-blue-100'}`}>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${String(s.paymentMode || "").toLowerCase() === 'cash' ? 'bg-amber-50 text-amber-700 border border-amber-100' : String(s.paymentMode || "").toLowerCase() === 'split' ? 'bg-violet-50 text-violet-700 border border-violet-100' : 'bg-blue-50 text-blue-700 border border-blue-100'}`}>
                     {s.paymentMode || "Online"}
                   </span>
                 </td>
@@ -463,6 +640,12 @@ Calculated Fee Status: <span className={form.feeStatus === "Paid" ? "text-green-
                     className="btn-primary text-xs px-3 py-1"
                   >
                     Edit
+                  </button>
+                  <button
+                    onClick={() => setAdvanceOpenFor(s)}
+                    className="btn-ghost text-xs px-3 py-1"
+                  >
+                    Advance
                   </button>
                   <button
                     onClick={() => deleteStudent(s._id)}
@@ -514,13 +697,21 @@ Calculated Fee Status: <span className={form.feeStatus === "Paid" ? "text-green-
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase">Paid (₹)</label>
-                <input className="border p-2 w-full rounded text-sm" type="number" value={editForm.amountPaid} onChange={(e) => setEditForm({ ...editForm, amountPaid: e.target.value })} />
+                {editForm.paymentMode === "Split" ? (
+                  <div className="space-y-2">
+                    <input className="border p-2 w-full rounded text-sm" type="number" min="0" value={editForm.amountPaidOnline} onChange={(e) => setEditForm({ ...editForm, amountPaidOnline: e.target.value })} placeholder="Online amount" />
+                    <input className="border p-2 w-full rounded text-sm" type="number" min="0" value={editForm.amountPaidCash} onChange={(e) => setEditForm({ ...editForm, amountPaidCash: e.target.value })} placeholder="Cash amount" />
+                  </div>
+                ) : (
+                  <input className="border p-2 w-full rounded text-sm" type="number" min="0" value={editForm.amountPaid} onChange={(e) => setEditForm({ ...editForm, amountPaid: e.target.value })} />
+                )}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase">Due (₹)</label>
                 <input 
                   className="border p-2 w-full rounded text-sm" 
                   type="number" 
+                  min="0"
                   value={editForm.amountDue} 
                   onChange={(e) => {
                     const dueVal = e.target.value;
@@ -535,13 +726,63 @@ Calculated Fee Status: <span className={form.feeStatus === "Paid" ? "text-green-
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase">Payment Received Now (₹)</label>
+                {editForm.paymentReceivedMode === "Split" ? (
+                  <div className="space-y-2">
+                    <input className="border p-2 w-full rounded text-sm" type="number" min="0" value={editForm.paymentReceivedOnlineNow} onChange={(e) => setEditForm({ ...editForm, paymentReceivedOnlineNow: e.target.value })} placeholder="Online amount" />
+                    <input className="border p-2 w-full rounded text-sm" type="number" min="0" value={editForm.paymentReceivedCashNow} onChange={(e) => setEditForm({ ...editForm, paymentReceivedCashNow: e.target.value })} placeholder="Cash amount" />
+                  </div>
+                ) : (
+                  <input className="border p-2 w-full rounded text-sm" type="number" min="0" value={editForm.paymentReceivedNow} onChange={(e) => setEditForm({ ...editForm, paymentReceivedNow: e.target.value })} placeholder="0" />
+                )}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase">Current Payment Mode</label>
+                <select className="border p-2 w-full rounded text-sm bg-white" value={editForm.paymentReceivedMode} onChange={(e) => setEditForm({
+                  ...editForm,
+                  paymentReceivedMode: e.target.value,
+                  paymentReceivedNow: e.target.value === "Split" ? "" : editForm.paymentReceivedNow,
+                  paymentReceivedOnlineNow: e.target.value === "Split" ? editForm.paymentReceivedOnlineNow : "",
+                  paymentReceivedCashNow: e.target.value === "Split" ? editForm.paymentReceivedCashNow : ""
+                })}>
+                  <option value="Online">Online</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Split">Split</option>
+                </select>
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase">Payment Mode</label>
-              <select className="border p-2 w-full rounded text-sm bg-white" value={editForm.paymentMode} onChange={(e) => setEditForm({ ...editForm, paymentMode: e.target.value })} >
+              <select className="border p-2 w-full rounded text-sm bg-white" value={editForm.paymentMode} onChange={(e) => setEditForm({
+                ...editForm,
+                paymentMode: e.target.value,
+                amountPaid: e.target.value === "Split" ? editForm.amountPaid : editForm.amountPaid,
+                amountPaidOnline: e.target.value === "Split" ? editForm.amountPaidOnline : "",
+                amountPaidCash: e.target.value === "Split" ? editForm.amountPaidCash : ""
+              })} >
                 <option value="Online">Online</option>
                 <option value="Cash">Cash</option>
+                <option value="Split">Split</option>
               </select>
             </div>
+
+            {editForm.paymentMode === "Split" && (
+              <div className="rounded-lg border border-orange-100 bg-orange-50 px-3 py-2 text-sm">
+                <div className="text-xs font-semibold uppercase tracking-wide text-orange-700">Split Payment Summary</div>
+                <div className="mt-1 text-orange-900 font-medium">
+                  Online: ₹{editPaymentSummary(editForm).online} · Cash: ₹{editPaymentSummary(editForm).cash} · Total: ₹{editPaymentSummary(editForm).total}
+                </div>
+              </div>
+            )}
+
+            {(Number(editForm.paymentReceivedNow) > 0 || Number(editForm.paymentReceivedOnlineNow) > 0 || Number(editForm.paymentReceivedCashNow) > 0) && (
+              <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-900">
+                The amount entered in “Payment Received Now” will be added to the student’s total paid amount and deducted from the current due automatically.
+              </div>
+            )}
 
             <div className="flex items-center space-x-2 border p-2 rounded bg-gray-50/50 my-1">
               <input
@@ -554,6 +795,25 @@ Calculated Fee Status: <span className={form.feeStatus === "Paid" ? "text-green-
               <label htmlFor="editAdvance" className="text-xs font-bold text-gray-600 select-none cursor-pointer">
                 Advance Payment Settled
               </label>
+            </div>
+
+            <div className="mt-2 p-2 border rounded bg-gray-50 text-sm">
+              <div className="text-xs font-semibold text-gray-600">Advance Balance</div>
+              <div className="font-medium text-blue-700">₹{editingStudent?.advanceAmount || 0}</div>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <input
+                  type="number"
+                    min="0"
+                  className="border p-2 w-full rounded text-sm"
+                  placeholder="Top-up advance (₹)"
+                  value={editForm.advanceTopUp}
+                  onChange={(e) => setEditForm({ ...editForm, advanceTopUp: e.target.value })}
+                />
+                <div className="flex items-center gap-2">
+                  <input id="useAdvanceNow" type="checkbox" checked={editForm.useAdvance} onChange={(e) => setEditForm({ ...editForm, useAdvance: e.target.checked })} />
+                  <label htmlFor="useAdvanceNow" className="text-xs text-gray-600">Use advance to clear due</label>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -579,6 +839,16 @@ Calculated Fee Status: <span className={form.feeStatus === "Paid" ? "text-green-
             </div>
           </div>
         </div>
+      )}
+      {advanceOpenFor && (
+        <AdvanceModal
+          open={Boolean(advanceOpenFor)}
+          onClose={() => setAdvanceOpenFor(null)}
+          studentId={advanceOpenFor?._id}
+          basePath="students"
+          onUpdated={fetchStudents}
+          studentName={advanceOpenFor?.name}
+        />
       )}
     </div>
   );

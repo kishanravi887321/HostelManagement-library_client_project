@@ -3,7 +3,7 @@ import { useState } from "react";
 import { API_BASE_URL } from "../config/api";
 
 export default function Login({ onLoginSuccess }) {
-  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [formData, setFormData] = useState({ username: "", password: "", displayName: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +17,7 @@ export default function Login({ onLoginSuccess }) {
     setLoading(false);
 
     // Simple client-side validation
-    if (!formData.username || !formData.password) {
+    if (!formData.username || !formData.password || !formData.displayName) {
       setError("Please fill in all fields.");
       return;
     }
@@ -30,6 +30,8 @@ export default function Login({ onLoginSuccess }) {
       if (res.data.token) {
         // Save token to local storage so user stays logged in
         localStorage.setItem("token", res.data.token);
+        // Save the display name provided at login for greeting use
+        localStorage.setItem("displayName", formData.displayName.trim());
         if (onLoginSuccess) onLoginSuccess();
       }
     } catch (err) {

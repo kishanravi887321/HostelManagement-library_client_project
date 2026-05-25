@@ -1,86 +1,86 @@
+import cron from "node-cron";
 import Library from "../models/Library.js";
-import Payment from "../models/Payment.js"; // 💡 Import your new Payment model
+import Student from "../models/Student.js";
+
+const safeNum = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const createPaymentEntry = ({ amount, mode, appliedToDue = 0, addedToAdvance = 0, note = "" }) => ({
+  amount,
+  mode,
+  appliedToDue,
+  addedToAdvance,
+  note,
+  date: new Date()
+});
+
+const processMonthlyForModel = async (Model, label) => {
+  const records = await Model.find();
+  let changed = 0;
+
+  for (const record of records) {
+    const previousPaid = Math.max(0, safeNum(record.amountPaid));
+    const previousDue = Math.max(0, safeNum(record.amountDue));
+
+    // New month base fee is last month's full fee bucket (paid + due)
+    const monthlyFee = previousPaid + previousDue;
+    if (monthlyFee <= 0) continue;
+
+    let advance = Math.max(0, safeNum(record.advanceAmount));
+    let newDue = monthlyFee;
+    let paidFromWallet = 0;
+
+    if (advance > 0) {
+      paidFromWallet = Math.min(advance, newDue);
+      newDue -= paidFromWallet;
+      advance -= paidFromWallet;
+    }
+
+    const payments = Array.isArray(record.payments) ? [...record.payments] : [];
+    if (paidFromWallet > 0) {
+      payments.push(createPaymentEntry({
+        amount: paidFromWallet,
+        mode: "AdvanceApplied",
+        appliedToDue: paidFromWallet,
+        addedToAdvance: 0,
+        note: "Auto-applied from wallet on monthly reset"
+      }));
+    }
+
+    record.amountPaid = paidFromWallet;
+    record.amountPaidOnline = 0;
+    record.amountPaidCash = 0;
+    record.amountDue = Math.max(0, newDue);
+    record.advanceAmount = Math.max(0, advance);
+    record.feeStatus = newDue > 0 ? "Pending" : "Paid";
+    record.payments = payments;
+    await record.save();
+    changed += 1;
+  }
+
+  if (changed > 0) {
+    console.log(`[monthly-reset] ${label}: updated ${changed} records.`);
+  }
+
+  return changed;
+};
 
 const monthlyBillingCycleReset = async () => {
   try {
-    const students = await Library.find();
-
-    // Get the month and year that just finished to archive them correctly
-    // If it's June 1st today, we are archiving the payments for May
-    const date = new Date();
-    date.setMonth(date.getMonth() - 1); 
-    const targetMonth = date.toLocaleString('default', { month: 'long' }); // e.g., "May"
-    const targetYear = date.getFullYear(); // e.g., 2026
-
-    for (let student of students) {
-      // 1. ARCHIVE PREVIOUS MONTH'S PAYMENT BEFORE WIPING IT
-      // Only archive if they actually paid something last month
-      if (student.amountPaid > 0) {
-        await Payment.create({
-          studentId: student._id,
-          amountPaid: student.amountPaid,
-          paymentMethod: "cash", // Or default to a string fallback like "wallet/cash"
-          month: targetMonth,
-          year: targetYear
-        });
-      }
-
-      // 2. YOUR ORIGINAL SMART WALLET & ROLLOVER LOGIC CONTINUES HERE
-      const previousPaid = student.amountPaid || 0;
-      const previousDue = student.amountDue || 0;
-      const customMonthlyFee = previousPaid + previousDue;
-
-      // Skip processing if a baseline fee hasn't been established yet for this record
-      if (customMonthlyFee <= 0) continue;
-
-      let currentAdvance = student.advanceBalance || 0;
-
-      if (currentAdvance >= customMonthlyFee) {
-        // Wallet completely covers their custom charge for the upcoming month
-        student.advanceBalance = currentAdvance - customMonthlyFee;
-        student.amountPaid = customMonthlyFee;
-        student.amountDue = 0;
-        student.feeStatus = "Paid";
-
-        // 🆕 Since their advance balance is instantly covering the NEW month, 
-        // we log this new automated payment record right away so the dashboard sees it!
-        await Payment.create({
-          studentId: student._id,
-          amountPaid: customMonthlyFee,
-          paymentMethod: "online", 
-          month: new Date().toLocaleString('default', { month: 'long' }), // The fresh month
-          year: new Date().getFullYear()
-        });
-
-      } else if (currentAdvance > 0 && currentAdvance < customMonthlyFee) {
-        // Wallet partially covers their custom cost
-        student.amountPaid = currentAdvance;
-        student.amountDue = customMonthlyFee - currentAdvance;
-        student.advanceBalance = 0;
-        student.feeStatus = "Pending";
-
-        // 🆕 Log the partial payment from their advance balance
-        await Payment.create({
-          studentId: student._id,
-          amountPaid: currentAdvance,
-          paymentMethod: "online",
-          month: new Date().toLocaleString('default', { month: 'long' }),
-          year: new Date().getFullYear()
-        });
-
-      } else {
-        // Wallet is empty, roll over standard recurring billing parameters
-        student.amountPaid = 0;
-        student.amountDue = customMonthlyFee;
-        student.feeStatus = "Pending";
-      }
-
-      await student.save();
-    }
-    console.log("Monthly billing cycle processed and historical payments safely archived!");
+    const hostelUpdated = await processMonthlyForModel(Student, "Hostel");
+    const libraryUpdated = await processMonthlyForModel(Library, "Library");
+    console.log("[monthly-reset] Billing cycle reset completed.");
+    return { hostelUpdated, libraryUpdated };
   } catch (error) {
-    console.error("Error executing monthly balance rollover routine:", error);
+    console.error("[monthly-reset] Error executing monthly reset:", error);
+    throw error;
   }
 };
 
+// Runs at 00:05 on the 1st day of every month (server local timezone)
+cron.schedule("5 0 1 * *", monthlyBillingCycleReset);
+
+export { monthlyBillingCycleReset };
 export default monthlyBillingCycleReset;

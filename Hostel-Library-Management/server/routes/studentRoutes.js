@@ -2,10 +2,12 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import {
-  addStudent,
-  getStudents,
-  deleteStudent,
-  updateStudent,
+    addStudent,
+    adjustAdvance,
+    deleteStudent,
+    getAdvance,
+    getStudents,
+    updateStudent,
 } from "../controllers/studentController.js";
 
 const router = express.Router();
@@ -33,5 +35,8 @@ router.get("/", getStudents);
 router.delete("/:id", deleteStudent);
 
 router.put("/:id", updateStudent);
+
+router.get("/:id/advance", getAdvance);
+router.post("/:id/advance", adjustAdvance);
 
 export default router;
