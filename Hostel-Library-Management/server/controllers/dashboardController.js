@@ -5,6 +5,10 @@ import { monthlyBillingCycleReset } from "../utils/monthlyReset.js";
 
 const ADMIN_TOKEN = "secure_hostel_library_management_token_2026";
 
+const safeLowerExpr = (field) => ({
+  $toLower: { $ifNull: [field, ""] }
+});
+
 const getDashboardStats = async (req, res) => {
   try {
     const { month } = req.query; // e.g., "May", "April", "All Time Records"
@@ -45,10 +49,10 @@ const getDashboardStats = async (req, res) => {
           _id: null,
           totalPaid: { $sum: "$amountPaid" },
           cashPaid: {
-            $sum: { $cond: [{ $eq: [{ $toLower: "$paymentMethod" }, "cash"] }, "$amountPaid", 0] }
+            $sum: { $cond: [{ $eq: [safeLowerExpr("$paymentMethod"), "cash"] }, "$amountPaid", 0] }
           },
           onlinePaid: {
-            $sum: { $cond: [{ $eq: [{ $toLower: "$paymentMethod" }, "online"] }, "$amountPaid", 0] }
+            $sum: { $cond: [{ $eq: [safeLowerExpr("$paymentMethod"), "online"] }, "$amountPaid", 0] }
           }
         }
       }
@@ -68,11 +72,11 @@ const getDashboardStats = async (req, res) => {
             cash: {
               $sum: {
                 $cond: [
-                  { $eq: [{ $toLower: "$paymentMode" }, "cash"] },
+                  { $eq: [safeLowerExpr("$paymentMode"), "cash"] },
                   "$amountPaid",
                   {
                     $cond: [
-                      { $eq: [{ $toLower: "$paymentMode" }, "split"] },
+                      { $eq: [safeLowerExpr("$paymentMode"), "split"] },
                       { $ifNull: ["$amountPaidCash", 0] },
                       0
                     ]
@@ -83,11 +87,11 @@ const getDashboardStats = async (req, res) => {
             online: {
               $sum: {
                 $cond: [
-                  { $eq: [{ $toLower: "$paymentMode" }, "online"] },
+                  { $eq: [safeLowerExpr("$paymentMode"), "online"] },
                   "$amountPaid",
                   {
                     $cond: [
-                      { $eq: [{ $toLower: "$paymentMode" }, "split"] },
+                      { $eq: [safeLowerExpr("$paymentMode"), "split"] },
                       { $ifNull: ["$amountPaidOnline", 0] },
                       0
                     ]
@@ -108,11 +112,11 @@ const getDashboardStats = async (req, res) => {
             cash: {
               $sum: {
                 $cond: [
-                  { $eq: [{ $toLower: "$paymentMode" }, "cash"] },
+                  { $eq: [safeLowerExpr("$paymentMode"), "cash"] },
                   { $add: ["$amountPaid", { $ifNull: ["$advanceAmount", 0] }] },
                   {
                     $cond: [
-                      { $eq: [{ $toLower: "$paymentMode" }, "split"] },
+                      { $eq: [safeLowerExpr("$paymentMode"), "split"] },
                       { $ifNull: ["$amountPaidCash", 0] },
                       0
                     ]
@@ -123,11 +127,11 @@ const getDashboardStats = async (req, res) => {
             online: {
               $sum: {
                 $cond: [
-                  { $eq: [{ $toLower: "$paymentMode" }, "online"] },
+                  { $eq: [safeLowerExpr("$paymentMode"), "online"] },
                   { $add: ["$amountPaid", { $ifNull: ["$advanceAmount", 0] }] },
                   {
                     $cond: [
-                      { $eq: [{ $toLower: "$paymentMode" }, "split"] },
+                      { $eq: [safeLowerExpr("$paymentMode"), "split"] },
                       { $ifNull: ["$amountPaidOnline", 0] },
                       0
                     ]
