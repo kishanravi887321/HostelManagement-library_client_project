@@ -268,7 +268,8 @@ const SeatGrid = () => {
       alert(`Success! Seat ${selectedSeat} has been allocated to ${formData.name}.`);
     } catch (err) {
       console.error("Error allocating seat:", err);
-      alert("Failed to assign seat. Check backend logs.");
+      const serverMessage = err?.response?.data?.message || err?.response?.data?.error || err?.message;
+      alert(serverMessage ? `Failed to assign seat: ${serverMessage}` : "Failed to assign seat. Check backend logs.");
     } finally {
       setFormSubmitting(false);
     }

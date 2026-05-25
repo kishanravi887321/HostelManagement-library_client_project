@@ -109,7 +109,14 @@ const addLibraryStudent = async (req, res) => {
       feeStatus: amountDue > 0 ? "Pending" : "Paid"
     };
 
-    if (req.file) studentData.identityProof = await persistProofFile(req.file);
+    if (req.file) {
+      try {
+        studentData.identityProof = await persistProofFile(req.file);
+      } catch (err) {
+        console.log("Proof persist error:", err.message || err);
+        return res.status(500).json({ message: err.message || "Failed to persist identity proof" });
+      }
+    }
 
     const data = new Library(studentData);
     await data.save();

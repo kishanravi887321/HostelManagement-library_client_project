@@ -21,6 +21,10 @@ export const persistProofFile = async (file) => {
   if (!file) return "";
 
   const storedFileName = buildStoredFileName(file);
+  // If running on Vercel (serverless) require blob token — local disk is unreliable
+  if (process.env.VERCEL && !isBlobStorageEnabled()) {
+    throw new Error("BLOB_READ_WRITE_TOKEN is not set. Configure blob storage in production to enable file uploads.");
+  }
 
   if (isBlobStorageEnabled()) {
     const blob = await put(`proofs/${storedFileName}`, file.buffer, {
