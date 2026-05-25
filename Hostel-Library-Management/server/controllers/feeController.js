@@ -1,15 +1,16 @@
-import Payment from "../models/Payment.js";
 import Library from "../models/Library.js"; // 💡 Using Library model to match your reset script
+import Payment from "../models/Payment.js";
 
 const collectFee = async (req, res) => {
   try {
     const { studentId, amountPaid, paymentMethod, month, year } = req.body;
+    const normalizedPaymentMethod = String(paymentMethod || "cash").toLowerCase();
 
     // 1. Create a historical ledger entry in your new Payment collection
     const newPayment = await Payment.create({
       studentId,
       amountPaid: Number(amountPaid),
-      paymentMethod,
+      paymentMethod: normalizedPaymentMethod,
       month,
       year
     });
@@ -26,5 +27,5 @@ const collectFee = async (req, res) => {
 };
 
 export {
-  collectFee
+    collectFee
 };
