@@ -81,9 +81,7 @@ export default function Library() {
         formData.append("identityProof", fileObject);
       }
 
-      await axios.post(`${API_BASE_URL}/api/library/add`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
+      await axios.post(`${API_BASE_URL}/api/library/add`, formData);
 
       setForm({
         name: "",
