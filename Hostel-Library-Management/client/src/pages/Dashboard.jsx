@@ -82,7 +82,7 @@ export default function Dashboard() {
             onChange={(e) => setFilterType(e.target.value)}
           >
             <option value="all">All Time Records</option>
-            <option value="thisMonth">This Months 2</option>
+            <option value="thisMonth">This Month </option>
             <option value="lastMonth">Last Month</option>
             <option value="custom">Select Specific Month</option>
           </select>
