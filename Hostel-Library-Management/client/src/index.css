@@ -25,6 +25,18 @@
 	--shadow: 0 20px 45px rgba(103, 102, 99, 0.06);
 }
 
+/* Dark theme overrides (uses greige tokens to keep palette consistent) */
+.dark {
+	--bg: var(--greige-6);
+	--surface: var(--greige-4);
+	--surface-alt: var(--greige-3);
+	--ink: var(--greige-1);
+	--muted: var(--greige-2);
+	--accent: var(--greige-3);
+	--border: var(--greige-3);
+	--shadow: 0 20px 45px rgba(0,0,0,0.45);
+}
+
 * {
 	box-sizing: border-box;
 }
@@ -178,56 +190,22 @@ h6 {
 	top: -35px;
 	width: 120px;
 	height: 120px;
-	background: radial-gradient(circle, rgba(15, 118, 110, 0.2) 0%, transparent 70%);
+	background: radial-gradient(circle, rgba(103,102,99,0.06) 0%, transparent 70%);
 }
 
-.stat-card[data-tone="amber"]::after {
-	background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, transparent 70%);
-}
+.stat-card[data-tone="amber"]::after { background: radial-gradient(circle, rgba(103,102,99,0.08) 0%, transparent 70%); }
+.stat-card[data-tone="teal"]::after  { background: radial-gradient(circle, rgba(103,102,99,0.06) 0%, transparent 70%); }
+.stat-card[data-tone="blue"]::after  { background: radial-gradient(circle, rgba(103,102,99,0.05) 0%, transparent 70%); }
+.stat-card[data-tone="rose"]::after  { background: radial-gradient(circle, rgba(103,102,99,0.07) 0%, transparent 70%); }
+.stat-card[data-tone="forest"]::after { background: radial-gradient(circle, rgba(103,102,99,0.06) 0%, transparent 70%); }
+.stat-card[data-tone="ember"]::after  { background: radial-gradient(circle, rgba(103,102,99,0.07) 0%, transparent 70%); }
 
-.stat-card[data-tone="teal"]::after {
-	background: radial-gradient(circle, rgba(14, 116, 144, 0.22) 0%, transparent 70%);
-}
-
-.stat-card[data-tone="blue"]::after {
-	background: radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, transparent 70%);
-}
-
-.stat-card[data-tone="rose"]::after {
-	background: radial-gradient(circle, rgba(225, 29, 72, 0.2) 0%, transparent 70%);
-}
-
-.stat-card[data-tone="forest"]::after {
-	background: radial-gradient(circle, rgba(22, 163, 74, 0.2) 0%, transparent 70%);
-}
-
-.stat-card[data-tone="ember"]::after {
-	background: radial-gradient(circle, rgba(194, 65, 12, 0.22) 0%, transparent 70%);
-}
-
-.stat-card[data-tone="teal"] {
-	background: linear-gradient(140deg, #ffffff, #ecfdf5);
-}
-
-.stat-card[data-tone="amber"] {
-	background: linear-gradient(140deg, #ffffff, #fff7ed);
-}
-
-.stat-card[data-tone="blue"] {
-	background: linear-gradient(140deg, #ffffff, #eff6ff);
-}
-
-.stat-card[data-tone="rose"] {
-	background: linear-gradient(140deg, #ffffff, #fff1f2);
-}
-
-.stat-card[data-tone="forest"] {
-	background: linear-gradient(140deg, #ffffff, #f0fdf4);
-}
-
-.stat-card[data-tone="ember"] {
-	background: linear-gradient(140deg, #ffffff, #fff1e6);
-}
+.stat-card[data-tone="teal"]  { background: linear-gradient(140deg, var(--surface), var(--greige-2)); }
+.stat-card[data-tone="amber"] { background: linear-gradient(140deg, var(--surface), var(--greige-3)); }
+.stat-card[data-tone="blue"]  { background: linear-gradient(140deg, var(--surface), var(--greige-1)); }
+.stat-card[data-tone="rose"]  { background: linear-gradient(140deg, var(--surface), var(--greige-2)); }
+.stat-card[data-tone="forest"]{ background: linear-gradient(140deg, var(--surface), var(--greige-3)); }
+.stat-card[data-tone="ember"] { background: linear-gradient(140deg, var(--surface), var(--greige-3)); }
 
 .stat-label {
 	font-size: 0.68rem;

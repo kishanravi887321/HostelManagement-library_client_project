@@ -32,6 +32,7 @@ export default function DashboardLayout() {
   const [dailyVisible, setDailyVisible] = useState(false);
   const [editingDisplayName, setEditingDisplayName] = useState(false);
   const [tempDisplayName, setTempDisplayName] = useState("");
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
 
   const fetchServerGreeting = async (displayName) => {
     const token = localStorage.getItem("token");
@@ -133,6 +134,14 @@ export default function DashboardLayout() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    // apply theme class to root element
+    const root = document.documentElement;
+    if (theme === "dark") root.classList.add("dark");
+    else root.classList.remove("dark");
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   const handleEditDisplayName = async () => {
     const current = localStorage.getItem("displayName") || adminName || "";
@@ -244,6 +253,7 @@ export default function DashboardLayout() {
           <div>
             <div className="flex items-center gap-3">
               <p className="text-2xl font-semibold text-slate-900">{greetingEmoji} {greetingLine}</p>
+              <div className="flex items-center">
               <button
                 type="button"
                 onClick={handleEditDisplayName}
@@ -252,6 +262,16 @@ export default function DashboardLayout() {
               >
                 ✏️ Edit
               </button>
+              <button
+                type="button"
+                onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                className="btn-ghost ml-3"
+                aria-label="Toggle theme"
+                title="Toggle light / dark"
+              >
+                {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
+              </button>
+              </div>
             </div>
             <p
               className="text-sm text-slate-600 mt-1"
