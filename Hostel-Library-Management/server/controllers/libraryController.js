@@ -3,35 +3,11 @@ import Library from "../models/Library.js";
 const addLibraryStudent = async (req, res) => {
   try {
     console.log("BODY:", req.body);
-
-    const inputPaid = Number(req.body.amountPaid) || 0;
-    const inputDue = Number(req.body.amountDue) || 0;
-
-    let finalAmountPaid = inputPaid;
-    let finalAmountDue = inputDue;
-    let finalAdvanceBalance = 0;
-
-    // Dynamic advance accounting
-    if (inputPaid > 0 && inputDue < 0) {
-      finalAdvanceBalance = Math.abs(inputDue);
-      finalAmountDue = 0;
-    } else if (req.body.isAdvancePayment === "true" || req.body.isAdvancePayment === true) {
-      finalAdvanceBalance = inputPaid;
-      finalAmountPaid = 0;
-      finalAmountDue = 0;
-    }
-
     const studentData = {
       ...req.body,
-      amountPaid: finalAmountPaid,
-      amountDue: finalAmountDue,
-      advanceBalance: finalAdvanceBalance,
-      feeStatus: finalAmountDue > 0 ? "Pending" : "Paid"
     };
 
-    if (req.file) {
-      studentData.identityProof = req.file.filename;
-    }
+    if (req.file) studentData.identityProof = req.file.filename;
 
     const data = new Library(studentData);
     await data.save();

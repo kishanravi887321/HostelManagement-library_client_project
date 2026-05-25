@@ -8,8 +8,6 @@ const LibrarySchema = new mongoose.Schema({
   feeStatus: { type: String, default: "Pending" },
   amountPaid: { type: Number, default: 0 },
   amountDue: { type: Number, default: 0 },
-  // 🆕 ADD THIS FIELD: Tracks advanced surplus payments cleanly
-  advanceBalance: { type: Number, default: 0 }, 
   lastPaymentDate: { type: Date },
   dateOfJoining: { type: Date },
   paymentMode: { type: String, default: "Online" },

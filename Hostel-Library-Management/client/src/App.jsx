@@ -5,6 +5,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Library from "./pages/Library";
 import Login from "./pages/Login";
+import Security from "./pages/Security";
 import StudentDirectory from "./pages/StudentDirectory";
 import Students from "./pages/Students";
 
@@ -43,6 +44,7 @@ export default function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="library" element={<Library />} />
+          <Route path="security" element={<Security />} />
           <Route path="students" element={<Students />} />
           
           {/* Registered Student Directory Route */}

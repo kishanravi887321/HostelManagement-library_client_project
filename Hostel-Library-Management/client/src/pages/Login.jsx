@@ -3,7 +3,7 @@ import { useState } from "react";
 import { API_BASE_URL } from "../config/api";
 
 export default function Login({ onLoginSuccess }) {
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +17,7 @@ export default function Login({ onLoginSuccess }) {
     setLoading(false);
 
     // Simple client-side validation
-    if (!formData.email || !formData.password) {
+    if (!formData.username || !formData.password) {
       setError("Please fill in all fields.");
       return;
     }
@@ -33,7 +33,7 @@ export default function Login({ onLoginSuccess }) {
         if (onLoginSuccess) onLoginSuccess();
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid email or password. Try again.");
+      setError(err.response?.data?.message || "Invalid username or password. Try again.");
     } finally {
       setLoading(false);
     }
@@ -61,14 +61,14 @@ export default function Login({ onLoginSuccess }) {
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-1">
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">Email Address</label>
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">Username</label>
             <input
-              type="email"
-              name="email"
+              type="text"
+              name="username"
               required
               className="w-full px-4 py-2.5 border border-[var(--border)] rounded-lg text-sm bg-white"
-              placeholder="admin@management.com"
-              value={formData.email}
+              placeholder="Username"
+              value={formData.username}
               onChange={handleChange}
             />
           </div>

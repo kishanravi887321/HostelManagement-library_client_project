@@ -42,7 +42,7 @@ export default function Dashboard() {
       targetMonth = getMonthName(lastMonthIndex);
     } else if (filterType === "custom" && customMonth) {
       // 🆕 Parses HTML input choice ("2026-05") cleanly into textual month names
-      const [year, monthNum] = customMonth.split("-");
+      const [, monthNum] = customMonth.split("-");
       targetMonth = getMonthName(parseInt(monthNum, 10) - 1);
     }
 

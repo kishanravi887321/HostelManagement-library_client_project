@@ -4,7 +4,7 @@ const addStudent = async (req, res) => {
   try {
     const studentData = {
       ...req.body,
-      identityProof: req.file ? req.file.filename : "No file uploaded"
+      identityProof: req.file ? req.file.filename : (req.body.identityProof || "No file uploaded")
     };
 
     const student = new Student(studentData);

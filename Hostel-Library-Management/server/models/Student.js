@@ -11,7 +11,6 @@ const StudentSchema = new mongoose.Schema({
   amountPaid: { type: Number, default: 0 },
   amountDue: { type: Number, default: 0 },
   paymentMode: { type: String, enum: ["Online", "Cash"], default: "Online" },
-  isAdvancePayment: { type: Boolean, default: false },
   dateOfJoining: { type: String }, 
   lastPaymentDate: { type: String },
   identityProof: { type: String } 
