@@ -206,7 +206,7 @@ const SeatGrid = () => {
       return aNum - bNum;
     });
 
-  const totalSeats = 41;
+  const totalSeats = 44;
   const seatNumbers = Array.from({ length: totalSeats }, (_, i) => i + 1);
   const occupiedCount = allocatedSeats.length;
   const availableCount = Math.max(totalSeats - occupiedCount, 0);
@@ -287,101 +287,6 @@ const SeatGrid = () => {
           Seat grid is hidden. Click "Show Grid" to view and assign seats.
         </div>
       )}
-
-      {/* Allocated Seats List */}
-      <div className="mt-8 table-shell">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <div>
-            <h3 className="text-base font-bold text-gray-800">Allocated Seats</h3>
-            <p className="text-xs text-gray-500">All occupied seats with student details.</p>
-          </div>
-          <span className="text-xs font-semibold text-gray-500">{allocatedSeats.length} Records</span>
-        </div>
-
-        {allocatedSeats.length === 0 ? (
-          <div className="p-6 text-sm text-gray-500">No seats have been allocated yet.</div>
-        ) : (
-          <div className="seat-roster">
-            <div className="seat-roster-head">
-              <span>Seat</span>
-              <span>Student</span>
-              <span>Contact</span>
-              <span>Payment</span>
-              <span>Status</span>
-              <span className="seat-roster-actions-title">Actions</span>
-            </div>
-            <div className="seat-roster-body">
-              {allocatedSeats.map((student) => {
-                const amountPaid = Number(student.amountPaid) || 0;
-                const amountDue = Number(student.amountDue) || 0;
-                const totalAmount = amountPaid + amountDue;
-                const feeStatus = student.feeStatus || (amountDue > 0 ? "Pending" : "Paid");
-                const statusTone = feeStatus === "Paid" ? "paid" : "pending";
-                const paidPercent = totalAmount > 0
-                  ? Math.round((amountPaid / totalAmount) * 100)
-                  : (feeStatus === "Paid" ? 100 : 0);
-
-                return (
-                  <div key={student._id || student.seatNo} className="seat-roster-row">
-                    <div className="seat-roster-seat">
-                      <span className="seat-label">Seat</span>
-                      <span className="seat-number">#{student.seatNo}</span>
-                    </div>
-                    <div className="seat-roster-student">
-                      <div className="name">{student.name || "Unknown"}</div>
-                      <div className="sub">{student.studentType || "Hosteler"}</div>
-                    </div>
-                    <div className="seat-roster-contact">
-                      <span>{student.phone || "N/A"}</span>
-                      <span className="sub">Joined {formatDateDisplay(student.dateOfJoining)}</span>
-                    </div>
-                    <div className="seat-roster-payment">
-                      <div className="payment-amounts">
-                        <span className="paid">{formatCurrency(amountPaid)}</span>
-                        <span className="due">{formatCurrency(amountDue)}</span>
-                      </div>
-                      <div className="payment-progress" data-tone={statusTone}>
-                        <span style={{ width: `${paidPercent}%` }} />
-                      </div>
-                      <div className="payment-sub">
-                        <span className="payment-percent">{paidPercent}% settled</span>
-                        <span className="payment-note">Last: {formatDateDisplay(student.lastPaymentDate)}</span>
-                      </div>
-                    </div>
-                    <div className="seat-roster-status">
-                      <span className="status-pill" data-tone={statusTone}>{feeStatus}</span>
-                      <span className="status-pill" data-tone="info">{student.paymentMode || "Online"}</span>
-                      <span className="status-pill" data-tone="muted">
-                        {student.identityProof ? "ID Proof" : "No ID"}
-                      </span>
-                    </div>
-                    <div className="seat-roster-actions">
-                      {student.identityProof ? (
-                        <a
-                          href={`${API_BASE_URL}/uploads/${student.identityProof}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="seat-roster-link"
-                        >
-                          View ID Proof
-                        </a>
-                      ) : (
-                        <span className="seat-roster-empty">No ID Proof</span>
-                      )}
-                      <button
-                        onClick={() => openEditModal(student.seatNo, student)}
-                        className="btn-primary btn-primary-sm"
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* --- ALLOCATION MODAL POPUP --- */}
       {isModalOpen && (
