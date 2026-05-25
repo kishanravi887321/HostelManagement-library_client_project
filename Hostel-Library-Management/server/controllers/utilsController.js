@@ -26,7 +26,9 @@ const getGreetingAndDaily = async (req, res) => {
   }
 
   const credentials = getAdminCredentials();
-  const username = credentials.username || "Admin";
+  const serverUsername = credentials.username || "Admin";
+  const providedName = (req.query.displayName || "").trim();
+  const usernameForSeed = providedName || serverUsername;
 
   const tz = req.query.tz || "UTC";
 
@@ -45,12 +47,12 @@ const getGreetingAndDaily = async (req, res) => {
   else if (hour >= 12 && hour < 17) timeWord = "Good Afternoon";
   else if (hour >= 17 && hour < 21) timeWord = "Good Evening";
 
-  const shortName = username.split(" ")[0] || username;
+  const shortName = usernameForSeed.split(" ")[0] || usernameForSeed;
   const greetingLine = `${timeWord} ${shortName} !`;
 
   // Select a deterministic daily line from internal JSON to avoid external dependency
   const todayKey = new Date().toISOString().slice(0, 10);
-  const picker = seedFromString(`${todayKey}-${username}`);
+  const picker = seedFromString(`${todayKey}-${usernameForSeed}`);
   const idx = Math.floor(picker() * dailyLines.length);
   const dailyLine = dailyLines[idx] || "Keep going — small steps win big.";
   // emoji chosen deterministically
@@ -70,7 +72,7 @@ const getGreetingAndDaily = async (req, res) => {
     // ignore header errors
   }
 
-  return res.json({ username, greetingLine, dailyLine, dailyEmoji });
+  return res.json({ username: serverUsername, greetingLine, dailyLine, dailyEmoji });
 };
 
 export { getGreetingAndDaily };
