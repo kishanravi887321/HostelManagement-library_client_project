@@ -30,6 +30,21 @@ const toAbsolutePath = (filePath) => {
 
 let server;
 
+const startServer = (protocolLabel) => {
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(`Port ${PORT} is already in use. Stop the existing process or change PORT in .env.`);
+      console.error(`Windows quick fix: netstat -ano | findstr :${PORT} and taskkill /PID <PID> /F`);
+      process.exit(1);
+    }
+    throw err;
+  });
+
+  server.listen(PORT, () => {
+    console.log(`${protocolLabel} server running on port ${PORT}`);
+  });
+};
+
 if (sslKeyPath && sslCertPath) {
   const httpsOptions = {
     key: fs.readFileSync(toAbsolutePath(sslKeyPath)),
@@ -41,12 +56,8 @@ if (sslKeyPath && sslCertPath) {
   }
 
   server = https.createServer(httpsOptions, app);
-  server.listen(PORT, () => {
-    console.log(`HTTPS server running on port ${PORT}`);
-  });
+  startServer("HTTPS");
 } else {
   server = http.createServer(app);
-  server.listen(PORT, () => {
-    console.log(`HTTP server running on port ${PORT}`);
-  });
+  startServer("HTTP");
 }

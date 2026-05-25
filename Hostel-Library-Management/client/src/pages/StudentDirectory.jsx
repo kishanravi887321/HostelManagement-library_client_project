@@ -26,7 +26,10 @@ export default function StudentDirectory() {
   };
 
   useEffect(() => {
-    fetchData();
+    const init = async () => {
+      await fetchData();
+    };
+    init();
   }, []);
 
   // 🧠 SMART UNIFICATION LOGIC: Handles duplicate names securely using phone numbers

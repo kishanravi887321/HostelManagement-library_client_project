@@ -17,7 +17,7 @@ export default function Library() {
     seatNo: "",
     feeStatus: "Pending",
     amountPaid: "", 
-    amountDue: "",    
+    amountDue: "",   
     lastPaymentDate: "",
     dateOfJoining: "",
     paymentMode: "Online"
@@ -52,7 +52,10 @@ export default function Library() {
   };
 
   useEffect(() => {
-    fetchStudents();
+    const init = async () => {
+      await fetchStudents();
+    };
+    init();
   }, []);
 
   // 🆕 UPGRADED: Sends the actual file via FormData payload
@@ -271,7 +274,7 @@ export default function Library() {
           value={form.amountPaid}
           onChange={(e) => setForm({ ...form, amountPaid: e.target.value })}
         />
-        
+
         <input
           type="number"
           className="border p-2 rounded text-sm"

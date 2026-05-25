@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "predev": "node scripts/free-port.js 5000",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
