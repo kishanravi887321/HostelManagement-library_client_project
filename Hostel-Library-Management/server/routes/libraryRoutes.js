@@ -1,5 +1,5 @@
 import express from "express";
-import multer from "multer"; // 1. 🆕 Import multer
+import multer from "multer";
 import {
     addLibraryStudent,
     adjustAdvance,
@@ -11,18 +11,7 @@ import {
 
 const router = express.Router();
 
-// 2. 🆕 Configure how files are saved locally
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Make sure this folder exists in your backend root!
-  },
-  filename: (req, file, cb) => {
-    // Saves file with timestamp prefix to prevent overlapping filenames
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-const upload = multer({ storage: storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // ================= POST: ADD STUDENT =================
 router.post("/add", upload.single("identityProof"), addLibraryStudent);

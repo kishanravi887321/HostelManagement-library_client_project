@@ -1,4 +1,5 @@
 import Student from "../models/Student.js";
+import { deleteProofFile, persistProofFile } from "../utils/proofStorage.js";
 
 const safeNum = (v) => {
   const n = Number(v);
@@ -92,7 +93,7 @@ const addStudent = async (req, res) => {
 
     const studentData = {
       ...req.body,
-      identityProof: req.file ? req.file.filename : (req.body.identityProof || ""),
+      identityProof: req.file ? await persistProofFile(req.file) : (req.body.identityProof || ""),
       amountPaid: totalPaid,
       amountPaidOnline: totalPaidOnline,
       amountPaidCash: totalPaidCash,
@@ -121,6 +122,16 @@ const getStudents = async (req, res) => {
 
 const deleteStudent = async (req, res) => {
   try {
+    const student = await Student.findById(req.params.id);
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    if (student.identityProof) {
+      await deleteProofFile(student.identityProof);
+    }
+
     await Student.findByIdAndDelete(req.params.id);
     res.json({ message: "Student deleted" });
   } catch (err) {

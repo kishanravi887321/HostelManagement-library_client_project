@@ -1,4 +1,5 @@
 import Library from "../models/Library.js";
+import { deleteProofFile, persistProofFile } from "../utils/proofStorage.js";
 
 const safeNum = (v) => {
   const n = Number(v);
@@ -9,6 +10,12 @@ const asBool = (v) => {
   if (typeof v === "boolean") return v;
   if (typeof v === "string") return v.toLowerCase() === "true" || v === "1";
   return Boolean(v);
+};
+
+const emptyToUndefined = (value) => {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === "string" && value.trim() === "") return undefined;
+  return value;
 };
 
 const createPaymentEntry = ({ amount, mode, appliedToDue = 0, addedToAdvance = 0, note = "" }) => ({
@@ -91,6 +98,8 @@ const addLibraryStudent = async (req, res) => {
 
     const studentData = {
       ...req.body,
+      lastPaymentDate: emptyToUndefined(req.body.lastPaymentDate),
+      dateOfJoining: emptyToUndefined(req.body.dateOfJoining),
       amountPaid: totalPaid,
       amountPaidOnline: totalPaidOnline,
       amountPaidCash: totalPaidCash,
@@ -100,7 +109,7 @@ const addLibraryStudent = async (req, res) => {
       feeStatus: amountDue > 0 ? "Pending" : "Paid"
     };
 
-    if (req.file) studentData.identityProof = req.file.filename;
+    if (req.file) studentData.identityProof = await persistProofFile(req.file);
 
     const data = new Library(studentData);
     await data.save();
@@ -256,6 +265,16 @@ const adjustAdvance = async (req, res) => {
 
 const deleteLibraryStudent = async (req, res) => {
   try {
+    const student = await Library.findById(req.params.id);
+
+    if (!student) {
+      return res.status(404).json({ message: "Student record not found" });
+    }
+
+    if (student.identityProof) {
+      await deleteProofFile(student.identityProof);
+    }
+
     const deleted = await Library.findByIdAndDelete(req.params.id);
 
     if (!deleted) {
