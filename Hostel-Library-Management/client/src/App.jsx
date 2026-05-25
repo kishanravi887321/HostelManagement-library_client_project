@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Security from "./pages/Security";
 import StudentDirectory from "./pages/StudentDirectory";
 import Students from "./pages/Students";
+import Transactions from "./pages/Transactions";
 
 export default function App() {
   // Check if a token exists to maintain login state
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="library" element={<Library />} />
           <Route path="security" element={<Security />} />
           <Route path="students" element={<Students />} />
+          <Route path="transactions" element={<Transactions />} />
           
           {/* Registered Student Directory Route */}
           <Route path="directory" element={<StudentDirectory />} />

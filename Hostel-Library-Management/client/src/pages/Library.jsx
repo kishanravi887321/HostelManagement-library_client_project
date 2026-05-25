@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import AdvanceModal from "../components/AdvanceModal";
 import { API_BASE_URL } from "../config/api";
 
 export default function Library() {
@@ -17,16 +18,20 @@ export default function Library() {
     seatNo: "",
     feeStatus: "Pending",
     amountPaid: "", 
+    amountPaidOnline: "",
+    amountPaidCash: "",
     amountDue: "",   
     lastPaymentDate: "",
     dateOfJoining: "",
-    paymentMode: "Online"
+    paymentMode: "Online",
+    advanceAmount: ""
   });
   
   // Track the actual binary file object
   const [fileObject, setFileObject] = useState(null);
 
   const [editingStudent, setEditingStudent] = useState(null);
+  const [advanceOpenFor, setAdvanceOpenFor] = useState(null);
 
   const [editForm, setEditForm] = useState({
     name: "",
@@ -36,11 +41,53 @@ export default function Library() {
     seatNo: "",
     feeStatus: "Pending",
     amountPaid: "",
+    amountPaidOnline: "",
+    amountPaidCash: "",
     amountDue: "",
+    paymentReceivedNow: "",
+    paymentReceivedOnlineNow: "",
+    paymentReceivedCashNow: "",
+    paymentReceivedMode: "Online",
     lastPaymentDate: "",
     dateOfJoining: "",
-    paymentMode: "Online"
+    paymentMode: "Online",
+    advanceTopUp: "",
+    useAdvance: false,
+    advanceAmount: ""
   });
+
+  const isSplitPayment = form.paymentMode === "Split";
+  const amountPaidTotal = isSplitPayment
+    ? (Number(form.amountPaidOnline) || 0) + (Number(form.amountPaidCash) || 0)
+    : (Number(form.amountPaid) || 0);
+
+  const paymentSummary = (student) => {
+    const mode = String(student.paymentMode || "Online").toLowerCase();
+
+    if (mode === "split") {
+      return {
+        online: Number(student.amountPaidOnline) || 0,
+        cash: Number(student.amountPaidCash) || 0,
+        total: Number(student.amountPaid) || 0,
+      };
+    }
+
+    if (mode === "cash") {
+      return {
+        online: 0,
+        cash: Number(student.amountPaid) || 0,
+        total: Number(student.amountPaid) || 0,
+      };
+    }
+
+    return {
+      online: Number(student.amountPaid) || 0,
+      cash: 0,
+      total: Number(student.amountPaid) || 0,
+    };
+  };
+
+  const editPaymentSummary = () => paymentSummary(editForm);
 
   const fetchStudents = async () => {
     try {
@@ -61,6 +108,18 @@ export default function Library() {
   // 🆕 UPGRADED: Sends the actual file via FormData payload
   const addStudent = async () => {
     try {
+      const hasNegative = [
+        form.amountPaid,
+        form.amountPaidOnline,
+        form.amountPaidCash,
+        form.amountDue,
+        form.advanceAmount
+      ].some((v) => v !== "" && Number(v) < 0);
+      if (hasNegative) {
+        alert("Negative values are not allowed in payment fields.");
+        return;
+      }
+
       const parsedAmountDue = Number(form.amountDue) || 0;
       const calculatedFeeStatus = parsedAmountDue > 0 ? "Pending" : "Paid";
 
@@ -69,12 +128,18 @@ export default function Library() {
       formData.append("phone", form.phone);
       formData.append("studentType", form.studentType);
       formData.append("seatNo", form.seatNo);
-      formData.append("amountPaid", Number(form.amountPaid) || 0);
+      formData.append("amountPaid", amountPaidTotal);
+      formData.append("amountPaidOnline", isSplitPayment ? Number(form.amountPaidOnline) || 0 : 0);
+      formData.append("amountPaidCash", isSplitPayment ? Number(form.amountPaidCash) || 0 : 0);
       formData.append("amountDue", parsedAmountDue);
       formData.append("feeStatus", calculatedFeeStatus);
       formData.append("lastPaymentDate", form.lastPaymentDate);
       formData.append("dateOfJoining", form.dateOfJoining);
       formData.append("paymentMode", form.paymentMode);
+      formData.append("advanceAmount", Number(form.advanceAmount) || 0);
+      formData.append("paymentReceivedNow", Number(form.amountPaid) || 0);
+      formData.append("paymentReceivedOnlineNow", isSplitPayment ? Number(form.amountPaidOnline) || 0 : (form.paymentMode === "Online" ? Number(form.amountPaid) || 0 : 0));
+      formData.append("paymentReceivedCashNow", isSplitPayment ? Number(form.amountPaidCash) || 0 : (form.paymentMode === "Cash" ? Number(form.amountPaid) || 0 : 0));
       
       if (fileObject) {
         // "identityProof" must match the name your multer backend middleware expects
@@ -90,10 +155,13 @@ export default function Library() {
         seatNo: "",
         feeStatus: "Pending",
         amountPaid: "",
+        amountPaidOnline: "",
+        amountPaidCash: "",
         amountDue: "",
         lastPaymentDate: "",
         dateOfJoining: "",
-        paymentMode: "Online"
+        paymentMode: "Online",
+        advanceAmount: ""
       });
       setFileObject(null); // Reset file upload input stream
 
@@ -113,23 +181,71 @@ export default function Library() {
       seatNo: student.seatNo || "",
       feeStatus: student.feeStatus || "Pending",
       amountPaid: student.amountPaid !== undefined ? student.amountPaid : "",
+      amountPaidOnline: student.amountPaidOnline !== undefined ? student.amountPaidOnline : "",
+      amountPaidCash: student.amountPaidCash !== undefined ? student.amountPaidCash : "",
       amountDue: student.amountDue !== undefined ? student.amountDue : "",
+      paymentReceivedNow: "",
+      paymentReceivedOnlineNow: "",
+      paymentReceivedCashNow: "",
+      paymentReceivedMode: student.paymentMode || "Online",
       lastPaymentDate: student.lastPaymentDate || "",
       dateOfJoining: student.dateOfJoining || "",
-      paymentMode: student.paymentMode || "Online"
+      paymentMode: student.paymentMode || "Online",
+      advanceTopUp: "",
+      useAdvance: false,
+      advanceAmount: student.advanceAmount ?? ""
     });
   };
 
   const updateStudent = async () => {
     try {
+      const hasNegative = [
+        editForm.amountPaid,
+        editForm.amountPaidOnline,
+        editForm.amountPaidCash,
+        editForm.amountDue,
+        editForm.paymentReceivedNow,
+        editForm.paymentReceivedOnlineNow,
+        editForm.paymentReceivedCashNow,
+        editForm.advanceTopUp
+      ].some((v) => v !== "" && Number(v) < 0);
+      if (hasNegative) {
+        alert("Negative values are not allowed in payment fields.");
+        return;
+      }
+
       const parsedAmountDue = Number(editForm.amountDue) || 0;
-      const calculatedFeeStatus = parsedAmountDue > 0 ? "Pending" : "Paid";
+      const previousOnline = Number(editForm.amountPaidOnline) || 0;
+      const previousCash = Number(editForm.amountPaidCash) || 0;
+
+      const receivedOnlineNow = editForm.paymentReceivedMode === "Split"
+        ? (Number(editForm.paymentReceivedOnlineNow) || 0)
+        : (editForm.paymentReceivedMode === "Online" ? (Number(editForm.paymentReceivedNow) || 0) : 0);
+
+      const receivedCashNow = editForm.paymentReceivedMode === "Split"
+        ? (Number(editForm.paymentReceivedCashNow) || 0)
+        : (editForm.paymentReceivedMode === "Cash" ? (Number(editForm.paymentReceivedNow) || 0) : 0);
+
+      const receivedNow = receivedOnlineNow + receivedCashNow;
+      const nextOnline = previousOnline + receivedOnlineNow;
+      const nextCash = previousCash + receivedCashNow;
+      const nextTotalPaid = nextOnline + nextCash;
+      const nextAmountDue = Math.max(parsedAmountDue - receivedNow, 0);
+      const calculatedFeeStatus = nextAmountDue > 0 ? "Pending" : "Paid";
+      const nextPaymentMode = nextOnline > 0 && nextCash > 0
+        ? "Split"
+        : nextCash > 0
+          ? "Cash"
+          : "Online";
 
       const payload = {
         ...editForm,
-        amountPaid: Number(editForm.amountPaid) || 0,
-        amountDue: parsedAmountDue,
-        feeStatus: calculatedFeeStatus
+        amountPaid: nextTotalPaid,
+        amountPaidOnline: nextOnline,
+        amountPaidCash: nextCash,
+        amountDue: nextAmountDue,
+        feeStatus: calculatedFeeStatus,
+        paymentMode: nextPaymentMode
       };
 
       await axios.put(`${API_BASE_URL}/api/library/${editingStudent._id}`, payload);
@@ -192,19 +308,17 @@ export default function Library() {
   }, 0);
 
   const onlinePaidAmount = students.reduce((sum, s) => {
+    const payment = paymentSummary(s);
     if (filterType === "all" || matchDate(s.lastPaymentDate, targetYear, targetMonthIndex)) {
-      if (String(s.paymentMode || "").toLowerCase() === "online") {
-        return sum + (Number(s.amountPaid) || 0);
-      }
+      return sum + payment.online;
     }
     return sum;
   }, 0);
 
   const cashPaidAmount = students.reduce((sum, s) => {
+    const payment = paymentSummary(s);
     if (filterType === "all" || matchDate(s.lastPaymentDate, targetYear, targetMonthIndex)) {
-      if (String(s.paymentMode || "").toLowerCase() === "cash") {
-        return sum + (Number(s.amountPaid) || 0);
-      }
+      return sum + payment.cash;
     }
     return sum;
   }, 0);
@@ -265,16 +379,39 @@ export default function Library() {
           <option value="Hosteler">Hosteler</option>
           <option value="Day Scholar">Day Scholar</option>
         </select>
-        <input
-          type="number"
-          className="border p-2 rounded text-sm"
-          placeholder="Amount Paid"
-          value={form.amountPaid}
-          onChange={(e) => setForm({ ...form, amountPaid: e.target.value })}
-        />
+        {isSplitPayment ? (
+          <>
+            <input
+              type="number"
+              min="0"
+              className="border p-2 rounded text-sm"
+              placeholder="Amount Paid Online"
+              value={form.amountPaidOnline}
+              onChange={(e) => setForm({ ...form, amountPaidOnline: e.target.value })}
+            />
+            <input
+              type="number"
+              min="0"
+              className="border p-2 rounded text-sm"
+              placeholder="Amount Paid Cash"
+              value={form.amountPaidCash}
+              onChange={(e) => setForm({ ...form, amountPaidCash: e.target.value })}
+            />
+          </>
+        ) : (
+          <input
+            type="number"
+            min="0"
+            className="border p-2 rounded text-sm"
+            placeholder="Amount Paid"
+            value={form.amountPaid}
+            onChange={(e) => setForm({ ...form, amountPaid: e.target.value })}
+          />
+        )}
 
         <input
           type="number"
+          min="0"
           className="border p-2 rounded text-sm"
           placeholder="Amount Due"
           value={form.amountDue}
@@ -288,14 +425,29 @@ export default function Library() {
             });
           }}
         />
+        <input
+          type="number"
+          min="0"
+          className="border p-2 rounded text-sm"
+          placeholder="Advance Top-up (₹)"
+          value={form.advanceAmount}
+          onChange={(e) => setForm({ ...form, advanceAmount: e.target.value })}
+        />
 
         <select
           className="border p-2 rounded text-sm"
           value={form.paymentMode}
-          onChange={(e) => setForm({ ...form, paymentMode: e.target.value })}
+          onChange={(e) => setForm({
+            ...form,
+            paymentMode: e.target.value,
+            amountPaid: e.target.value === "Split" ? "" : form.amountPaid,
+            amountPaidOnline: e.target.value === "Split" ? form.amountPaidOnline : "",
+            amountPaidCash: e.target.value === "Split" ? form.amountPaidCash : "",
+          })}
         >
           <option value="Online">Online Payment</option>
           <option value="Cash">Cash Payment</option>
+          <option value="Split">Split Payment</option>
         </select>
         <div className="flex flex-col">
           <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 mb-0.5">Last Payment Date</label>
@@ -395,6 +547,7 @@ export default function Library() {
               <th className="p-3">Due (₹)</th>
               <th className="p-3">Method</th>
               <th className="p-3">Fee Status</th>
+              <th className="p-3">Advance (₹)</th>
               <th className="p-3">ID Proof</th>
               <th className="p-3">Actions</th>
             </tr>
@@ -406,10 +559,11 @@ export default function Library() {
                 <td className="p-3 text-gray-600">{s.phone}</td>
                 <td className="p-3 font-semibold text-gray-700">#{s.seatNo}</td>
                 <td className="p-3 text-gray-500">{s.studentType}</td>
-                <td className="p-3 text-green-600 font-medium">₹{s.amountPaid || 0}</td>
+                <td className="p-3 text-green-600 font-medium">₹{paymentSummary(s).total}</td>
                 <td className="p-3 text-red-500 font-medium">₹{s.amountDue || 0}</td>
+                <td className="p-3 text-blue-700 font-semibold">₹{s.advanceAmount || 0}</td>
                 <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${s.paymentMode === 'Cash' ? 'bg-orange-50 text-orange-600 border' : 'bg-teal-50 text-teal-700 border'}`}>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${String(s.paymentMode || "").toLowerCase() === 'cash' ? 'bg-orange-50 text-orange-600 border' : String(s.paymentMode || "").toLowerCase() === 'split' ? 'bg-violet-50 text-violet-700 border' : 'bg-teal-50 text-teal-700 border'}`}>
                     {s.paymentMode || "Online"}
                   </span>
                 </td>
@@ -438,6 +592,12 @@ export default function Library() {
                     className="btn-primary text-xs px-3 py-1"
                   >
                     Edit
+                  </button>
+                  <button
+                    onClick={() => setAdvanceOpenFor(s)}
+                    className="btn-ghost text-xs px-3 py-1"
+                  >
+                    Advance
                   </button>
                   <button
                     onClick={async () => {
@@ -474,7 +634,7 @@ export default function Library() {
       {/* ================= EDIT MODAL PANEL ================= */}
       {editingStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 backdrop-blur-xs">
-          <div className="bg-white p-6 w-96 space-y-3 rounded-lg shadow-xl border">
+          <div className="bg-white p-6 w-96 max-h-[90vh] overflow-y-auto space-y-3 rounded-lg shadow-xl border">
             <h2 className="text-xl font-bold text-gray-800 mb-2">Edit Student Profile</h2>
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase">Name</label>
@@ -498,13 +658,14 @@ export default function Library() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase">Paid (₹)</label>
-                <input className="border p-2 w-full rounded text-sm" type="number" value={editForm.amountPaid} onChange={(e) => setEditForm({ ...editForm, amountPaid: e.target.value })} />
+                <input className="border p-2 w-full rounded text-sm" type="number" min="0" value={editForm.amountPaid} onChange={(e) => setEditForm({ ...editForm, amountPaid: e.target.value })} />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase">Due (₹)</label>
                 <input 
                   className="border p-2 w-full rounded text-sm" 
                   type="number" 
+                  min="0"
                   value={editForm.amountDue} 
                   onChange={(e) => {
                     const dueVal = e.target.value;
@@ -518,13 +679,114 @@ export default function Library() {
                 />
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase">Payment Received Now (₹)</label>
+                {editForm.paymentReceivedMode === "Split" ? (
+                  <div className="space-y-2">
+                    <input
+                      className="border p-2 w-full rounded text-sm"
+                      type="number"
+                      min="0"
+                      value={editForm.paymentReceivedOnlineNow}
+                      onChange={(e) => setEditForm({ ...editForm, paymentReceivedOnlineNow: e.target.value })}
+                      placeholder="Online amount"
+                    />
+                    <input
+                      className="border p-2 w-full rounded text-sm"
+                      type="number"
+                      min="0"
+                      value={editForm.paymentReceivedCashNow}
+                      onChange={(e) => setEditForm({ ...editForm, paymentReceivedCashNow: e.target.value })}
+                      placeholder="Cash amount"
+                    />
+                  </div>
+                ) : (
+                  <input
+                    className="border p-2 w-full rounded text-sm"
+                    type="number"
+                    min="0"
+                    value={editForm.paymentReceivedNow}
+                    onChange={(e) => setEditForm({ ...editForm, paymentReceivedNow: e.target.value })}
+                    placeholder="0"
+                  />
+                )}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase">Current Payment Mode</label>
+                <select
+                  className="border p-2 w-full rounded text-sm"
+                  value={editForm.paymentReceivedMode}
+                  onChange={(e) => setEditForm({
+                    ...editForm,
+                    paymentReceivedMode: e.target.value,
+                    paymentReceivedNow: e.target.value === "Split" ? "" : editForm.paymentReceivedNow,
+                    paymentReceivedOnlineNow: e.target.value === "Split" ? editForm.paymentReceivedOnlineNow : "",
+                    paymentReceivedCashNow: e.target.value === "Split" ? editForm.paymentReceivedCashNow : ""
+                  })}
+                >
+                  <option value="Online">Online</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Split">Split</option>
+                </select>
+              </div>
+            </div>
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase">Payment Mode</label>
-              <select className="border p-2 w-full rounded text-sm" value={editForm.paymentMode} onChange={(e) => setEditForm({ ...editForm, paymentMode: e.target.value })} >
+              <select
+                className="border p-2 w-full rounded text-sm"
+                value={editForm.paymentMode}
+                onChange={(e) => {
+                  const nextMode = e.target.value;
+                  setEditForm((prev) => ({
+                    ...prev,
+                    paymentMode: nextMode,
+                    amountPaid: nextMode === "Split" ? prev.amountPaid : prev.amountPaid,
+                  }));
+                }}
+              >
                 <option value="Online">Online</option>
                 <option value="Cash">Cash</option>
+                <option value="Split">Split</option>
               </select>
             </div>
+            {editForm.paymentMode === "Split" && (
+              <div className="rounded-lg border border-violet-100 bg-violet-50 px-3 py-2 text-sm">
+                <div className="text-xs font-semibold uppercase tracking-wide text-violet-700">Split Payment Summary</div>
+                <div className="mt-1 text-violet-900 font-medium">
+                  Online: ₹{editPaymentSummary().online} · Cash: ₹{editPaymentSummary().cash} · Total: ₹{editPaymentSummary().total}
+                </div>
+                {editForm.paymentReceivedMode === "Split" ? (
+                  Number(editForm.paymentReceivedOnlineNow) > 0 || Number(editForm.paymentReceivedCashNow) > 0 ? (
+                    <div className="mt-1 text-violet-800 text-xs">
+                      New payment will add ₹{Number(editForm.paymentReceivedOnlineNow) || 0} online and ₹{Number(editForm.paymentReceivedCashNow) || 0} cash, then reduce due automatically.
+                    </div>
+                  ) : null
+                ) : Number(editForm.paymentReceivedNow) > 0 && (
+                  <div className="mt-1 text-violet-800 text-xs">
+                    New payment will add ₹{Number(editForm.paymentReceivedNow) || 0} to {editForm.paymentReceivedMode} and reduce due automatically.
+                  </div>
+                )}
+              <div className="mt-2 p-2 border rounded bg-gray-50 text-sm">
+                <div className="text-xs font-semibold text-gray-600">Advance Balance</div>
+                <div className="font-medium text-blue-700">₹{editingStudent?.advanceAmount || 0}</div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    className="border p-2 w-full rounded text-sm"
+                    placeholder="Top-up advance (₹)"
+                    value={editForm.advanceTopUp}
+                    onChange={(e) => setEditForm({ ...editForm, advanceTopUp: e.target.value })}
+                  />
+                  <div className="flex items-center gap-2">
+                    <input id="useAdvance" type="checkbox" checked={editForm.useAdvance} onChange={(e) => setEditForm({ ...editForm, useAdvance: e.target.checked })} />
+                    <label htmlFor="useAdvance" className="text-xs text-gray-600">Use advance to clear due</label>
+                  </div>
+                </div>
+              </div>
+              </div>
+            )}
             <div>
               <label className="block text-xs font-semibold text-gray-500 uppercase">Last Payment Date</label>
               <input className="border p-2 w-full rounded text-sm" type="date" value={editForm.lastPaymentDate} onChange={(e) => setEditForm({ ...editForm, lastPaymentDate: e.target.value })} />
@@ -550,6 +812,16 @@ export default function Library() {
             </div>
           </div>
         </div>
+      )}
+      {advanceOpenFor && (
+        <AdvanceModal
+          open={Boolean(advanceOpenFor)}
+          onClose={() => setAdvanceOpenFor(null)}
+          studentId={advanceOpenFor?._id}
+          basePath="library"
+          onUpdated={fetchStudents}
+          studentName={advanceOpenFor?.name}
+        />
       )}
     </div>
   );
