@@ -80,11 +80,7 @@ export default function Students() {
         formData.append("identityProof", selectedFile);
       }
 
-      await axios.post(`${API_BASE_URL}/api/students/add`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data"
-        }
-      });
+      await axios.post(`${API_BASE_URL}/api/students/add`, formData);
       
       // Reset Form State
       setForm({ 
