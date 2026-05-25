@@ -1,35 +1,15 @@
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/api";
 
 export default function DashboardLayout() {
   const navigate = useNavigate();
-  const [showLogoutMenu, setShowLogoutMenu] = useState(false);
-  const menuRef = useRef(null);
+  
 
-  useEffect(() => {
-    const handleDocumentClick = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setShowLogoutMenu(false);
-      }
-    };
+  const handleOpenSecurity = () => navigate("/security");
 
-    document.addEventListener("mousedown", handleDocumentClick);
-    return () => {
-      document.removeEventListener("mousedown", handleDocumentClick);
-    };
-  }, []);
-
-  const handleOpenSecurity = () => {
-    setShowLogoutMenu(false);
-    navigate("/security");
-  };
-
-  const handleNavigate = (path) => {
-    setShowLogoutMenu(false);
-    navigate(path);
-  };
+  const handleNavigate = (path) => navigate(path);
 
   const handleLogout = () => {
     try {
@@ -217,72 +197,37 @@ export default function DashboardLayout() {
       <aside className="side-rail">
         <div className="side-rail-inner">
           <div className="space-y-6">
-            <div ref={menuRef} className="flex items-center gap-3 relative">
-              <button
-                type="button"
-                onClick={() => setShowLogoutMenu((prev) => !prev)}
-                className="brand-badge"
-                aria-label="Open logout options"
-                title="Open logout options"
-              >
-                👩
-              </button>
-              {showLogoutMenu && (
-                <div className="absolute left-0 top-14 z-50 w-56 rounded-xl border border-white/10 bg-slate-950/95 shadow-2xl p-2 space-y-1">
-                  <button
-                    type="button"
-                    onClick={() => handleNavigate("/")}
-                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/10"
-                  >
-                    Dashboard
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleNavigate("/students")}
-                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/10"
-                  >
-                    Hostel Students
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleNavigate("/library")}
-                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/10"
-                  >
-                    Library
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleNavigate("/transactions")}
-                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/10"
-                  >
-                    Transactions
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleNavigate("/directory")}
-                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/10"
-                  >
-                    Student Directory
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleOpenSecurity}
-                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/10"
-                  >
-                    Security
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-white hover:bg-white/10"
-                  >
-                    Logout
-                  </button>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3">
+                <div className="brand-badge">👩</div>
+                <div>
+                  <h1 className="text-xl font-semibold text-white">JAI HIND LIBRARY</h1>
                 </div>
-              )}
-              <div>
-                <h1 className="text-xl font-semibold text-white">JAI HIND LIBRARY</h1>
               </div>
+
+              <nav className="mt-6 flex flex-col gap-1">
+                <NavLink to="/" end className={({isActive}) => `nav-link ${isActive? 'nav-link-active':''}`}>
+                  Dashboard
+                </NavLink>
+                <NavLink to="/students" className={({isActive}) => `nav-link ${isActive? 'nav-link-active':''}`}>
+                  Hostel Students
+                </NavLink>
+                <NavLink to="/library" className={({isActive}) => `nav-link ${isActive? 'nav-link-active':''}`}>
+                  Library
+                </NavLink>
+                <NavLink to="/transactions" className={({isActive}) => `nav-link ${isActive? 'nav-link-active':''}`}>
+                  Transactions
+                </NavLink>
+                <NavLink to="/directory" className={({isActive}) => `nav-link ${isActive? 'nav-link-active':''}`}>
+                  Student Directory
+                </NavLink>
+                <NavLink to="/security" className={({isActive}) => `nav-link ${isActive? 'nav-link-active':''}`}>
+                  Security
+                </NavLink>
+                <button type="button" onClick={handleLogout} className="nav-link text-left">
+                  Logout
+                </button>
+              </nav>
             </div>
 
           </div>
