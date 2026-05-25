@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../config/api";
+import { resolveProofUrl } from "../utils/proofUrl";
 
 export default function StudentDirectory() {
   const [hostelStudents, setHostelStudents] = useState([]);
@@ -195,7 +196,7 @@ export default function StudentDirectory() {
                     <span className="text-xs font-bold text-gray-400 block uppercase tracking-wider">Identity Document</span>
                     {selectedStudent.identityProof && selectedStudent.identityProof !== "No file uploaded" ? (
                       <a 
-                        href={`${API_BASE_URL}/uploads/${selectedStudent.identityProof}`} 
+                        href={resolveProofUrl(selectedStudent.identityProof)} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-xs font-semibold text-emerald-700 underline bg-emerald-50 hover:bg-emerald-100 transition px-2 py-1 rounded block mt-1 border border-emerald-100 cursor-pointer text-center"

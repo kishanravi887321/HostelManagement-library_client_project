@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import AdvanceModal from "../components/AdvanceModal";
 import { API_BASE_URL } from "../config/api";
+import { resolveProofUrl } from "../utils/proofUrl";
 
 export default function Library() {
   const [students, setStudents] = useState([]);
@@ -575,7 +576,7 @@ export default function Library() {
                 <td className="p-3">
                   {s.identityProof ? (
                     <a
-                      href={`${API_BASE_URL}/uploads/${s.identityProof}`}
+                      href={resolveProofUrl(s.identityProof)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 font-medium hover:underline text-xs flex items-center gap-1"
