@@ -17,8 +17,8 @@ export default function Login({ onLoginSuccess }) {
     setLoading(false);
 
     // Simple client-side validation
-    if (!formData.username || !formData.password || !formData.displayName) {
-      setError("Please fill in all fields.");
+    if (!formData.username || !formData.password) {
+        setError("Please fill in username and password.");
       return;
     }
 
@@ -30,8 +30,10 @@ export default function Login({ onLoginSuccess }) {
       if (res.data.token) {
         // Save token to local storage so user stays logged in
         localStorage.setItem("token", res.data.token);
-        // Save the display name provided at login for greeting use
-        localStorage.setItem("displayName", formData.displayName.trim());
+        // Save the display name provided at login for greeting use (if given)
+        if (formData.displayName && formData.displayName.trim()) {
+          localStorage.setItem("displayName", formData.displayName.trim());
+        }
         if (onLoginSuccess) onLoginSuccess();
       }
     } catch (err) {
@@ -71,6 +73,18 @@ export default function Login({ onLoginSuccess }) {
               className="w-full px-4 py-2.5 border border-[var(--border)] rounded-lg text-sm bg-white"
               placeholder="Username"
               value={formData.username}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">Display Name</label>
+            <input
+              type="text"
+              name="displayName"
+              className="w-full px-4 py-2.5 border border-[var(--border)] rounded-lg text-sm bg-white"
+              placeholder="Your name (for greetings) — optional"
+              value={formData.displayName}
               onChange={handleChange}
             />
           </div>

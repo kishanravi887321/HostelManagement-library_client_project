@@ -16,22 +16,10 @@ export default function DashboardLayout() {
     };
 
     document.addEventListener("mousedown", handleDocumentClick);
-
     return () => {
       document.removeEventListener("mousedown", handleDocumentClick);
     };
   }, []);
-
-  const handleLogout = () => {
-    // 1. Clear the authentication token from browser storage
-    localStorage.removeItem("token");
-    
-    // 2. Route the application back to the login page immediately
-    navigate("/login", { replace: true });
-    
-    // 3. Trigger a quick reload to clear local state variables in App.jsx
-    window.location.reload();
-  };
 
   const handleOpenSecurity = () => {
     setShowLogoutMenu(false);
@@ -43,6 +31,17 @@ export default function DashboardLayout() {
     navigate(path);
   };
 
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem("token");
+      localStorage.removeItem("displayName");
+      navigate("/login", { replace: true });
+      window.location.reload();
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
+
   // Admin / greeting state
   const [adminName, setAdminName] = useState("Admin");
   const [greetingPrefix, setGreetingPrefix] = useState("Admin Panel");
@@ -51,6 +50,27 @@ export default function DashboardLayout() {
   const [greetingEmoji, setGreetingEmoji] = useState("👋");
   const [dailyEmoji, setDailyEmoji] = useState("✨");
   const [dailyVisible, setDailyVisible] = useState(false);
+  const [editingDisplayName, setEditingDisplayName] = useState(false);
+  const [tempDisplayName, setTempDisplayName] = useState("");
+
+  const fetchServerGreeting = async (displayName) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const res = await axios.get(`${API_BASE_URL}/api/utils/greeting`, {
+        params: { tz, displayName: displayName || "" },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = res.data || {};
+      if (data.dailyLine) setDailyLine(data.dailyLine);
+      if (data.dailyEmoji) setDailyEmoji(data.dailyEmoji);
+      // trigger fade-in
+      setTimeout(() => setDailyVisible(true), 60);
+    } catch (err) {
+      // ignore
+    }
+  };
 
   const seededRandom = (seed) => {
     // simple mulberry32 PRNG
@@ -112,29 +132,54 @@ export default function DashboardLayout() {
     // fetch server-side greeting + daily line (send timezone so server can compute local greeting)
     const token = localStorage.getItem("token");
     if (!token) return;
-
     (async () => {
       try {
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const res = await axios.get(`${API_BASE_URL}/api/utils/greeting`, {
-          params: { tz },
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const localDisplayName = localStorage.getItem("displayName") || "";
+        // prefer local displayName for visible greeting
+        if (localDisplayName) setAdminName(localDisplayName);
+        else {
+          // if no local name, fallback to server username
+          try {
+            const cred = await axios.get(`${API_BASE_URL}/api/auth/credentials`, { headers: { Authorization: `Bearer ${token}` } });
+            setAdminName(cred.data?.username || "Admin");
+          } catch {
+            setAdminName("Admin");
+          }
+        }
 
-        const data = res.data || {};
-        setAdminName(data.username || "Admin");
-        if (data.greetingLine) setGreetingLine(data.greetingLine);
-        if (data.greetingLine) setGreetingPrefix(data.greetingLine);
-        if (data.dailyLine) setDailyLine(data.dailyLine);
-        if (data.dailyEmoji) setDailyEmoji(data.dailyEmoji);
-        if (data.greetingEmoji) setGreetingEmoji(data.greetingEmoji);
-        // trigger fade-in
-        setTimeout(() => setDailyVisible(true), 60);
+        await fetchServerGreeting(localDisplayName);
       } catch (err) {
-        // if server fails, keep defaults and fall back to client logic
+        // ignore
       }
     })();
   }, []);
+
+  const handleEditDisplayName = async () => {
+    const current = localStorage.getItem("displayName") || adminName || "";
+    const newName = window.prompt("Enter display name for greetings (leave blank to clear):", current);
+    if (newName === null) return; // cancelled
+    const trimmed = newName.trim();
+    if (trimmed) {
+      localStorage.setItem("displayName", trimmed);
+      setAdminName(trimmed);
+      await fetchServerGreeting(trimmed);
+    } else {
+      localStorage.removeItem("displayName");
+      // restore server username if available
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const cred = await axios.get(`${API_BASE_URL}/api/auth/credentials`, { headers: { Authorization: `Bearer ${token}` } });
+          setAdminName(cred.data?.username || "Admin");
+        } catch {
+          setAdminName("Admin");
+        }
+      } else {
+        setAdminName("Admin");
+      }
+      await fetchServerGreeting("");
+    }
+  };
 
   useEffect(() => {
     // compute greeting based on local time and adminName
@@ -252,8 +297,17 @@ export default function DashboardLayout() {
       <div className="page-shell">
           <div className="top-bar">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.25em] text-amber-700">{greetingPrefix}</p>
-            <p className="text-2xl font-semibold text-slate-900">{greetingEmoji} {greetingLine}</p>
+            <div className="flex items-center gap-3">
+              <p className="text-2xl font-semibold text-slate-900">{greetingEmoji} {greetingLine}</p>
+              <button
+                type="button"
+                onClick={handleEditDisplayName}
+                className="text-sm text-amber-700 hover:underline"
+                aria-label="Edit display name"
+              >
+                ✏️ Edit
+              </button>
+            </div>
             <p
               className="text-sm text-slate-600 mt-1"
               style={{
